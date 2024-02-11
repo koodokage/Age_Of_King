@@ -1,6 +1,7 @@
 using UnityEngine;
 using AgeOfKing.Systems.Input;
 using UnityEngine.Assertions;
+using UnityEngine.Tilemaps;
 
 namespace AgeOfKing.Components
 {
@@ -8,8 +9,8 @@ namespace AgeOfKing.Components
     {
         Camera _mainCamera;
 
-        [SerializeField] Grid grid;
-        [SerializeField] LayerMask gridInputLayer;
+        [SerializeField] Tilemap map;
+        [SerializeField] ITilemap imap;
         [SerializeField] LayerMask playerPawnInputLayer;
         [SerializeField] GameObject symbol;
         [SerializeField] GameObject selectedPawn;
@@ -23,6 +24,7 @@ namespace AgeOfKing.Components
             _mainCamera = Camera.main;
 
             Assert.IsNotNull(_mainCamera);
+
         }
 
 
@@ -76,17 +78,17 @@ namespace AgeOfKing.Components
         }
 
         /// <summary>
-        /// Transform pointer data to world location
+        /// Transform pointer data to ground map cell location
         /// </summary>
         /// <param name="mouseLocation"></param>
         void OnChange_MousePosition(Vector2 mouseLocation)
         {
-            Ray ray = _mainCamera.ScreenPointToRay(mouseLocation);
-            RaycastHit rayHit;
-            if (Physics.Raycast(ray, out rayHit, 100, gridInputLayer))
+            Vector3 mouseLoc = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int mouseCell = map.WorldToCell(mouseLoc);
+            var tile = map.GetTile(mouseCell);
+            if (tile != null)
             {
-                Vector3 gridLocation = grid.WorldToCell(rayHit.point);
-                symbol.transform.position = gridLocation;
+                symbol.transform.position = mouseCell;
             }
         }
 
@@ -113,7 +115,7 @@ namespace AgeOfKing.Components
             isMoving = true;
         }
 
-      
+
     }
 
 }

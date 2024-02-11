@@ -1,6 +1,6 @@
 # Age Of King
 
-2D Strategy Turn Base Game
+2D Turn Base Strategy Game
 
 PANTEON CASE
 

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace AgeOfKing.System.Input
+namespace AgeOfKing.Systems.Input
 {
     public class InputManager : MonoBehaviour
     {

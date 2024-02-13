@@ -2,6 +2,7 @@ using UnityEngine;
 using AgeOfKing.Systems.Input;
 using UnityEngine.Assertions;
 using UnityEngine.Tilemaps;
+using AgeOfKing.Datas;
 
 namespace AgeOfKing.Components
 {
@@ -9,22 +10,17 @@ namespace AgeOfKing.Components
     {
         Camera _mainCamera;
 
-        [SerializeField] Tilemap map;
-        [SerializeField] ITilemap imap;
-        [SerializeField] LayerMask playerPawnInputLayer;
-        [SerializeField] GameObject symbol;
-        [SerializeField] GameObject selectedPawn;
-        [SerializeField] Vector3 targetLocation;
-        [SerializeField] bool movementToggle = false;
-        [SerializeField] bool isMoving = false;
+        [SerializeField] Tilemap groundMap;
+        public LayerMask SelectableLayer;
+
+        private static Vector3Int _currentMapCell;
+        public static Vector3Int GetCurrentMapCell { get => _currentMapCell;}
 
 
         private void Awake()
         {
             _mainCamera = Camera.main;
-
             Assert.IsNotNull(_mainCamera);
-
         }
 
 
@@ -50,14 +46,11 @@ namespace AgeOfKing.Components
         private void OnClicked_MouseRight()
         {
 
-            if (selectedPawn == null)
-                return;
+            //if (isMoving)
+            //    return;
 
-            if (isMoving)
-                return;
-
-            movementToggle = true;
-            targetLocation = symbol.transform.position;
+            //movementToggle = true;
+            //targetLocation = symbol.transform.position;
         }
 
         /// <summary>
@@ -65,15 +58,16 @@ namespace AgeOfKing.Components
         /// </summary>
         void OnClicked_MouseLeft(Vector2 mouseLocation)
         {
-            if (isMoving)
-                return;
+            Vector3 mouseLoc = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int mouseCell = groundMap.WorldToCell(mouseLoc);
 
-            Ray ray = _mainCamera.ScreenPointToRay(mouseLocation);
-            RaycastHit2D rayHit;
-
-            if (rayHit = Physics2D.Raycast(ray.origin, ray.direction, 100, playerPawnInputLayer))
+            var tile = groundMap.GetTile(mouseCell);
+            if (tile != null)
             {
-                selectedPawn = rayHit.transform.gameObject;
+               if(MapEntityData.GetInstance.IsPlaceBulding(mouseCell,out ABuilding building))
+                {
+                    Debug.LogWarning($"[SELECTED INSTANCE] {building.GetData.BuildingLabel}");
+                }
             }
         }
 
@@ -84,36 +78,36 @@ namespace AgeOfKing.Components
         void OnChange_MousePosition(Vector2 mouseLocation)
         {
             Vector3 mouseLoc = _mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            Vector3Int mouseCell = map.WorldToCell(mouseLoc);
-            var tile = map.GetTile(mouseCell);
+            Vector3Int mouseCell = groundMap.WorldToCell(mouseLoc);
+            var tile = groundMap.GetTile(mouseCell);
             if (tile != null)
             {
-                symbol.transform.position = mouseCell;
+                _currentMapCell = mouseCell;
             }
         }
 
-        private void Update()
-        {
-            //TEMPO CODE 
+        //private void Update()
+        //{
+        //    //TEMPO CODE 
 
-            if (selectedPawn == null)
-                return;
+        //    if (selectedPawn == null)
+        //        return;
 
-            if (movementToggle == false)
-                return;
+        //    if (movementToggle == false)
+        //        return;
 
-            if ((targetLocation - selectedPawn.transform.position).magnitude < 0.1f)
-            {
-                selectedPawn.transform.position = targetLocation;
-                movementToggle = false;
-                selectedPawn = null;
-                isMoving = false;
-                return;
-            }
+        //    if ((targetLocation - selectedPawn.transform.position).magnitude < 0.1f)
+        //    {
+        //        selectedPawn.transform.position = targetLocation;
+        //        movementToggle = false;
+        //        selectedPawn = null;
+        //        isMoving = false;
+        //        return;
+        //    }
 
-            selectedPawn.transform.position = Vector3.MoveTowards(selectedPawn.transform.position, targetLocation, Time.deltaTime * 4f);
-            isMoving = true;
-        }
+        //    selectedPawn.transform.position = Vector3.MoveTowards(selectedPawn.transform.position, targetLocation, Time.deltaTime * 4f);
+        //    isMoving = true;
+        //}
 
 
     }

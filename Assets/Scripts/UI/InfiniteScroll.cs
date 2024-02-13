@@ -9,7 +9,7 @@ namespace AgeOfKing.UI
     /// -NON MEMORY LEAK- INFINITE SCROLL
     /// </summary>
     [RequireComponent(typeof(ScrollRect))]
-    public class InfiniteScroll : MonoBehaviour, IEndDragHandler, IBeginDragHandler,IScrollHandler
+    public class InfiniteScroll : AProducibleUI, IEndDragHandler, IBeginDragHandler,IScrollHandler
     {
         enum Way { NONE, UP, DOWN }
 
@@ -25,12 +25,14 @@ namespace AgeOfKing.UI
         float _lastScrollValue = 0;
         private const float SCROLL_STOP_MAGNITUDE = 100f;
 
-        private void Start()
+        public override void Initialize()
         {
             Assert.IsNotNull(content);
 
             _scrollRect = GetComponent<ScrollRect>();
-            
+
+            Assert.IsNotNull(_scrollRect);
+
             int count = _scrollRect.content.childCount;
             for (int i = 0; i < count; i++)
             {
@@ -47,6 +49,9 @@ namespace AgeOfKing.UI
 
         public void GetScrollChangedValue()
         {
+            if (_scrollRect == null)
+                return;
+
             if (_scrollRect.velocity.sqrMagnitude < SCROLL_STOP_MAGNITUDE)
             {
                 _currentWay = Way.NONE;
@@ -136,6 +141,7 @@ namespace AgeOfKing.UI
         {
             DetectMovementWay();
         }
+
     }
 
 }

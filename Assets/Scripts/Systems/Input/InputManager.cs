@@ -12,7 +12,7 @@ namespace AgeOfKing.Systems.Input
         public static PointerLocationChanged OnMousePositionChanged;
         public delegate void PointerLeftClick(Vector2 location);
         public static PointerLeftClick OnMouseLeftClicked;
-        public delegate void PointerRightClick();
+        public delegate void PointerRightClick(Vector2 location);
         public static PointerRightClick OnMouseRightClicked;
 
         private void OnEnable()
@@ -29,7 +29,8 @@ namespace AgeOfKing.Systems.Input
 
         private void RightClick_performed(InputAction.CallbackContext obj)
         {
-            OnMouseRightClicked?.Invoke();
+            Vector2 mouseLocation = _gameplayInput.Pointer.Position.ReadValue<Vector2>();
+            OnMouseRightClicked?.Invoke(mouseLocation);
         }
 
         private void LeftClick_performed(InputAction.CallbackContext obj)

@@ -12,7 +12,7 @@ public class SingleBehaviour<T> : MonoBehaviour where T:Component
         }
     }
 
-    protected void Awake()
+    protected virtual  void Awake()
     {
         if (_instance == null)
         {

@@ -1,24 +1,37 @@
-﻿using AgeOfKing.Components;
+﻿using AgeOfKing.Abstract.UI;
+using AgeOfKing.Components;
+using AgeOfKing.Datas;
 using UnityEngine;
 
 namespace AgeOfKing.UI
 {
-    public class ProductionMenuInitializer : AProducibleUI
+    public class ProductionMenuInitializer : ALaunchableUI
     {
         [SerializeField] BuildingData[] buildings;
         [SerializeField] GameObject buttonPrefab;
         [SerializeField] RectTransform prefabParent;
-        [SerializeField] AProducibleUI infiniteScroll;
+        [SerializeField] InfiniteScroll infiniteScroll;
 
-        public override void Initialize()
+        public override void Launch()
         {
-            for (int i = 0; i < buildings.Length; i++)
+           int scrollerRequestedCount =  infiniteScroll.GetRequestedAmount(buildings.Length);
+            int loopIndexCounter = 0;
+
+            while (scrollerRequestedCount != 0)
             {
-                var instance = Instantiate(buttonPrefab, prefabParent);
-                instance.GetComponent<BuildingButton>().Initialize(buildings[i]);
+               BuildingProduceButtonFactory.GetInstance.GetProducerUI(buildings[loopIndexCounter], prefabParent);
+
+                scrollerRequestedCount--;
+                loopIndexCounter++;
+                if (loopIndexCounter >= buildings.Length)
+                {
+                    loopIndexCounter = 0;
+                }
+
             }
 
-            infiniteScroll.Initialize();
+
+            infiniteScroll.Launch();
         }
 
     }

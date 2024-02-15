@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 202a16d5c8eceff4ba2bbffe43fa08df, type: 3}
+  m_Name: PowerPlant
+  m_EditorClassIdentifier: 
+  icon: {fileID: 21300000, guid: a7ca4d30f1e83fe449a00c6772a8e26b, type: 3}
+  aspectSize: {x: 82, y: 102}
+  label: PowerPlant
+  description: Super power plant
+  price: 100
+  entityTile: {fileID: 11400000, guid: 8b6841f4d85aab544901a542541455d1, type: 2}
+  xDimension: 2
+  yDimension: 3
+  buildingPrefab: {fileID: 2533877507108703275, guid: d0b13971a36cdc144ab8505acecebd6f, type: 3}
+  groundTile: {fileID: 11400000, guid: bae11c44d40bb11409508a388d2c78a9, type: 2}
+  placementOffset: {x: 0, y: 1, z: 0}
+  moveableRowIndexs: 0000000002000000

@@ -44,5 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88977902e139e384aa76a59c55fe784e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Data: {fileID: 11400000, guid: e86b96480a95fe04c971aab8f9b4dfd1, type: 2}
-  BottomLeftCorner: {x: 0, y: 0, z: 0}
+  resourceLabel: Population
+  resourceAmount: 2

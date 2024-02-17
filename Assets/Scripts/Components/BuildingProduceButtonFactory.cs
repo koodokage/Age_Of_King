@@ -1,19 +1,22 @@
 ﻿using AgeOfKing.Abstract.Components;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
+using AgeOfKing.Systems;
+using AgeOfKing.UI;
 using UnityEngine;
 
 namespace AgeOfKing.Components
 {
-    public class BuildingProduceButtonFactory : AProducerUIFactory<BuildingData, AEntityProducerButton>
+    public class BuildingProduceButtonFactory : AProducerUIFactory<BuildingData, BuildingProduceButton>
     {
-        [SerializeField] AEntityProducerButton prefab_BuildingButton;
+        [SerializeField] BuildingProduceButton prefab_BuildingButton;
 
-        public override AEntityProducerButton GetProducerUI(BuildingData produceData,Transform parent)
+        public override BuildingProduceButton GetProducerUI(BuildingData produceData,Transform parent,IPlayer player)
         {
-            AEntityProducerButton instance = null;
+            BuildingProduceButton instance = null;
             if (_pool.Count > 0)
             {
                 instance = _pool.Pop();
+                instance.transform.SetParent(parent);
                 instance.gameObject.SetActive(true);
             }
             else
@@ -21,14 +24,14 @@ namespace AgeOfKing.Components
                 instance = Instantiate(prefab_BuildingButton, parent);
             }
 
-            instance.InitializeData(produceData);
+            instance.InitializeData(produceData, player);
             return instance;
         }
 
-        public override void Release(AEntityProducerButton unitButton)
+        public override void Release(BuildingProduceButton unitButton)
         {
             unitButton.gameObject.SetActive(false);
-            unitButton.transform.SetParent(null);
+            unitButton.transform.SetParent(transform);
             _pool.Push(unitButton);
         }
     }

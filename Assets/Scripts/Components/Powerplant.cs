@@ -1,5 +1,5 @@
 using AgeOfKing.Abstract.Components;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
 using UnityEngine;
 
 namespace AgeOfKing.Components
@@ -21,18 +21,8 @@ namespace AgeOfKing.Components
             return resourceAmount;
         }
 
-        public override void InitializeData(BuildingData data)
-        {
-            base.InitializeData(data);
-
-            // Add population
-        }
-    }
-
-
-    public struct BuildingStat 
-    {
         
     }
+
 
 }

@@ -1,57 +1,91 @@
 using AgeOfKing.Abstract.Components;
-using AgeOfKing.Abstract.UI;
 using AgeOfKing.Components;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
 using AgeOfKing.UI;
-using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace AgeOfKing.Systems.UI
 {
-    public class UIManager : SingleBehaviour<UIManager>
+    public class UIManager : ASingleBehaviour<UIManager>
     {
-        [SerializeField] ALaunchableUI[] launchables;
+        [SerializeField] ProductionMenuInitializer productionMenu;
         [SerializeField] EntityInfoGroup infoGroup;
+        [SerializeField] TurnIconView turnIconView_Player1;
+        [SerializeField] TurnIconView turnIconView_Player2;
+        [SerializeField] GameObject kingdomSelectionPanel;
 
-
-        private IEnumerator Start()
+        private void Start()
         {
-            foreach (var IE in launchables)
-            {
-                IE.Launch();
-                yield return null;
-            }
+            kingdomSelectionPanel.SetActive(true);
+
+            TurnManager.GetInstance.OnTurnPassToP1 += OnTurnPlayer1;
+            TurnManager.GetInstance.OnTurnPassToP2 += OnTurnPlayer2;
+            TurnManager.GetInstance.OnTurnChange += OnTurnChanged;
+
         }
 
-
-
-        public  void OnClicked_BuildingButton(Datas.BuildingData building)
+        private void OnDisable()
         {
-            BuildingTileChecker.GetInstance.SetBuildingData(building);
+            TurnManager.GetInstance.OnTurnPassToP1 -= OnTurnPlayer1;
+            TurnManager.GetInstance.OnTurnPassToP2 -= OnTurnPlayer2;
+            TurnManager.GetInstance.OnTurnChange -= OnTurnChanged;
+
+        }
+
+        /// <summary>
+        /// manage ui side operations
+        /// </summary>
+        /// <param name="building"></param>
+        public  void OnClicked_BuildingButton(Data.BuildingData building,IPlayer player)
+        {
+            player.BuildingTileChecker.InitializeBuildingData(building);
+            infoGroup.InitializeAndOpen(building);
         }
 
         public void OnUnitSelected(AUnit unit)
         {
-            infoGroup.Open(unit);
+            infoGroup.InitializeAndOpen(unit);
         }
 
-        public void OnBuildingSelected(ABuilding building)
+        public void OnBuildingSelected(BuildingData building)
         {
-            infoGroup.Open(building);
+            infoGroup.InitializeAndOpen(building);
         }
 
         public void OnManufacturerSelected(AManufacturerBuilding manufacturerBuilding)
         {
-            infoGroup.Open(manufacturerBuilding);
+            infoGroup.GenerateAndOpen(manufacturerBuilding);
         }
 
-        internal void OnClickEmpty()
+        public void OnClickEmpty()
         {
             infoGroup.Close();
         }
 
-       
+        public void OnTurnChanged(IPlayer currentSide,int currentTurnIndex )
+        {
+            infoGroup.Close();
+        }
+
+        public void OnTurnPlayer1()
+        {
+            turnIconView_Player1.SetView(true);
+            turnIconView_Player2.SetView(false);
+        }
+
+        public void OnTurnPlayer2()
+        {
+            turnIconView_Player1.SetView(false);
+            turnIconView_Player2.SetView(true);
+        }
+
+        public void OnPlayerManagerInitialized(BuildingData[] buildings)
+        {
+            productionMenu.Launch(buildings);
+            kingdomSelectionPanel.SetActive(false);
+        }
+
     }
+
+
 }

@@ -1,5 +1,6 @@
 ﻿using AgeOfKing.Abstract.Components;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
+using AgeOfKing.Systems;
 using AgeOfKing.Systems.UI;
 using UnityEngine;
 
@@ -14,7 +15,8 @@ namespace AgeOfKing.Components
 
         public override void OnSelected()
         {
-            UIManager.GetInstance.OnManufacturerSelected(this);
+            if (owner == TurnManager.GetInstance.GetTurnPlayer)
+                UIManager.GetInstance.OnManufacturerSelected(this);
         }
 
         protected bool TryGetSpawnLocation(out Vector3Int spawnLocation)
@@ -30,7 +32,7 @@ namespace AgeOfKing.Components
                 for (int x = 0; x < xdim; x++)
                 {
                     // Check is valid
-                    if (MapEntityDataBase.GetInstance.IsTileSpawnable(spawnLocation))
+                    if (MapEntityDataBase.IsTileSpawnable(spawnLocation))
                     {
                         return true;
                     }

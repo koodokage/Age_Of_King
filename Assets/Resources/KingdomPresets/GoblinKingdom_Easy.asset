@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766377b52522a9e4aa413c895727f6b0, type: 3}
+  m_Name: GoblinKingdom_Easy
+  m_EditorClassIdentifier: 
+  kigdomType: 1
+  kingdomKing: {fileID: 11400000, guid: 937be4221037e1c4985b3758e6b8b437, type: 2}
+  kingdomUnits:
+  - {fileID: 11400000, guid: 84cfb0d320037be4fb8faa64da4ec106, type: 2}
+  kingdomBuildings:
+  - {fileID: 11400000, guid: 1bbd7cf4593fd3047abff17803370b1f, type: 2}
+  - {fileID: 11400000, guid: 87ad904a65e5f1c478bda97724d4d7c9, type: 2}
+  - {fileID: 11400000, guid: 7a85bb334f9d7804a94e79ce52cde18e, type: 2}
+  gold: 1000
+  populationCapacity: 5
+  moveRights: 3
+  kingMoveRights: 3

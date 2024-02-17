@@ -1,64 +1,109 @@
 using AgeOfKing.Abstract.Components;
 using AgeOfKing.AStar;
+using AgeOfKing.Systems;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace AgeOfKing.Datas
+namespace AgeOfKing.Data
 {
-    public class MapEntityDataBase : SingleBehaviour<MapEntityDataBase>
+    /// <summary>
+    /// game map entity data base (exp :checking tile,get unit and obstacle/building tiles )
+    /// </summary>
+    public static class MapEntityDataBase 
     {
-        Dictionary<Vector3Int, bool> staticObstacleDB;
-        Dictionary<Vector3Int, bool> buildingExtrudedDB;
-        Dictionary<Vector3Int, AUnit> unitDB;
-        Dictionary<Vector3Int, ABuilding> buildingInstancesDB;
+        /// <summary>
+        /// Partial dictionaries for quick search also for layer detections
+        /// </summary>
+        static Dictionary<Vector3Int, bool> staticObstacleDB;
+        static Dictionary<Vector3Int, ABuilding> buildingExtrudedDB;
+        static Dictionary<Vector3Int, AUnit> unitDB;
+        static Dictionary<Vector3Int, IHittable> hittableDB;
+        static Dictionary<Vector3Int, ABuilding> buildingInstancesDB;
 
-        private void Start()
+        public static void Initiliaze()
         {
-            PathFinder.Start();
+
             staticObstacleDB = new Dictionary<Vector3Int, bool>();
-            buildingExtrudedDB = new Dictionary<Vector3Int, bool>();
+            buildingExtrudedDB = new Dictionary<Vector3Int, ABuilding>();
             unitDB = new Dictionary<Vector3Int, AUnit>();
             buildingInstancesDB = new Dictionary<Vector3Int, ABuilding>();
+            hittableDB = new Dictionary<Vector3Int, IHittable>();
 
             var cells = GetAllPaintedTiles();
             foreach (var cell in cells)
             {
                 AddObstacleData(cell);
             }
-
         }
 
-        public void AddBuildingData(Vector3Int cell,ABuilding building)
+        /// <summary>
+        /// Building covered tile data
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        /// <param name="building">building instance</param>
+        public static void AddBuildingData(Vector3Int cell,ABuilding building)
         {
             buildingInstancesDB.TryAdd(cell, building);
         }
 
-        public void AddBuildingExtrudeData(Vector3Int cell)
+        /// <summary>
+        /// Building covered non walkable tile data
+        /// </summary>
+        /// <param name="cell"></param>
+        public static void AddBuildingBlockedData(Vector3Int cell,ABuilding building)
         {
-            buildingExtrudedDB.TryAdd(cell, true);
+            buildingExtrudedDB.TryAdd(cell, building);
             PathFinder.UpdateMovementObstacles(cell);
+            if (building.TryGetComponent(out IHittable hittable))
+            {
+                hittableDB.TryAdd(cell, hittable);
+            }
         }
 
-        public void AddObstacleData(Vector3Int cell)
+        /// <summary>
+        /// Static obstacles in map
+        /// </summary>
+        /// <param name="cell">tile location </param>
+        public static void AddObstacleData(Vector3Int cell)
         {
             staticObstacleDB.TryAdd(cell, true);
             PathFinder.UpdateMovementObstacles(cell);
         }
 
-        public void AddUnitData(Vector3Int cell,AUnit unit)
+        /// <summary>
+        /// AUnit covered tile
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        /// <param name="unit">unit instance</param>
+        public static void AddUnitData(Vector3Int cell,AUnit unit)
         {
             unitDB.TryAdd(cell, unit);
             PathFinder.UpdateMovementObstacles(cell);
+
+            if(unit.TryGetComponent(out IHittable hittable))
+            {
+                hittableDB.TryAdd(cell, hittable);
+            }
         }
 
-        public void RemoveUnitData(Vector3Int cell)
+        /// <summary>
+        /// AUnit released tile
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        public static void RemoveUnitData(Vector3Int cell)
         {
             unitDB.Remove(cell);
+            hittableDB.Remove(cell);
             PathFinder.RemoveMovementObstacles(cell);
         }
 
-        public bool IsTileBlocked(Vector3Int cell)
+        /// <summary>
+        /// check all obstacle and covered tile (exp : building placement)
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        /// <returns></returns>
+        public static bool IsTileBlocked(Vector3Int cell)
         {
             if (staticObstacleDB.ContainsKey(cell)) return true;
             if (buildingInstancesDB.ContainsKey(cell)) return true;
@@ -67,66 +112,26 @@ namespace AgeOfKing.Datas
             return false;
         }
 
-        public bool IsTileSpawnable(Vector3Int cell)
+        /// <summary>
+        /// check procedural tile in unit datas
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        /// <returns></returns>
+        public static bool IsTileSpawnable(Vector3Int cell)
         {
-            if (staticObstacleDB.ContainsKey(cell)) return false;
             if (unitDB.ContainsKey(cell)) return false;
 
             return true;
         }
 
-        public bool IsTileContainBulding(Vector3Int cell,out ABuilding building)
-        {
-            if (buildingInstancesDB.TryGetValue(cell, out building))
-            {
-                return true;
-            }
 
-            return false;
-        }
-
-        public bool IsTileContainSelecteable(Vector3Int cell, out ISelectable selectable)
-        {
-            selectable = null;
-
-            if (unitDB.TryGetValue(cell, out AUnit unit))
-            {
-                unit.TryGetComponent(out selectable);
-                return true;
-            }
-
-            if (buildingInstancesDB.TryGetValue(cell, out ABuilding building))
-            {
-                building.TryGetComponent(out selectable);
-                return true;
-            }
-
-            return false;
-
-        }
-
-        public bool IsTileMoveable(Vector3Int cell)
-        {
-            if (staticObstacleDB.ContainsKey(cell))
-            {
-                return false;
-            }
-
-            if (buildingExtrudedDB.ContainsKey(cell))
-            {
-                return false;
-            }
-
-            if (unitDB.ContainsKey(cell))
-            {
-                return false;
-            }
-
-            return true;
-
-        }
-
-        public bool IsTileContainUnit(Vector3Int cell, out AUnit unit)
+        /// <summary>
+        /// check and return AUnit in tile
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        /// <param name="unit">unit instance</param>
+        /// <returns></returns>
+        public static bool IsTileContainUnit(Vector3Int cell, out AUnit unit)
         {
             if (unitDB.TryGetValue(cell, out  unit))
             {
@@ -137,9 +142,78 @@ namespace AgeOfKing.Datas
 
         }
 
-        IEnumerable<Vector3Int> GetAllPaintedTiles()
+        public static bool IsTileContainExtrudedBuilding(Vector3Int cell, out ABuilding building)
         {
-            Tilemap obstacleMap = Maps.GetInstance.GetObstacleMap;
+            if (buildingExtrudedDB.TryGetValue(cell, out building))
+            {
+                return true;
+            }
+
+            return false;
+
+        }
+
+        /// <summary>
+        /// check and return hittable in tile
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="hittableUnit"></param>
+        /// <returns></returns>
+        public static bool IsTileContainHittable(Vector3Int cell, out IHittable hittableUnit)
+        {
+            if (hittableDB.TryGetValue(cell, out hittableUnit))
+            {
+                return true;
+            }
+
+            if (buildingExtrudedDB.TryGetValue(cell, out ABuilding  building))
+            {
+                building.TryGetComponent(out hittableUnit);
+                Debug.LogError("BUILDING HITTABLE");
+                return true;
+            }
+
+            Debug.LogError("NOTHIING HITTABLE");
+
+            return false;
+
+        }
+
+        /// <summary>
+        /// return a selectable map entity
+        /// </summary>
+        /// <param name="cell">tile location</param>
+        /// <param name="selectable">selectable entity</param>
+        /// <returns></returns>
+        public static bool IsTileContainSelecteable(Vector3Int cell, out ISelectable selectable)
+        {
+            selectable = null;
+
+            if (unitDB.TryGetValue(cell, out AUnit unit))
+            {
+                unit.TryGetComponent(out selectable);
+                return true;
+            }
+
+            if (buildingExtrudedDB.TryGetValue(cell, out ABuilding building))
+            {
+                building.TryGetComponent(out selectable);
+                return true;
+            }
+
+            return false;
+
+        }
+
+
+        /// <summary>
+        /// load all brushed tile in target map
+        /// </summary>
+        /// <returns></returns>
+        static IEnumerable<Vector3Int> GetAllPaintedTiles()
+        {
+            Tilemap obstacleMap = Map.GetInstance.GetObstacleMap;
+       
             var bound = obstacleMap.cellBounds;
             for (int x = bound.min.x; x < bound.max.x; x++)
             {

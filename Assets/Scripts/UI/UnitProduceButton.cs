@@ -1,6 +1,5 @@
 using AgeOfKing.Abstract.Components;
-using AgeOfKing.Abstract.Datas;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
 using AgeOfKing.Systems;
 using TMPro;
 using UnityEngine;
@@ -9,10 +8,7 @@ using UnityEngine.UI;
 
 namespace AgeOfKing.UI
 {
-
-
-
-    public class UnitProduceButton : AEntityProducerButton, IValueViewChangeListener , IPopulationViewChangeListener
+    public class UnitProduceButton : AEntityProducerButton<UnitData>
     {
         [SerializeField] Button BTN_produce;
         [SerializeField] TextMeshProUGUI TMP_Label;
@@ -22,29 +18,13 @@ namespace AgeOfKing.UI
         UnitData _unitData;
         IManufacturerBuilding _manufacturerBuilding;
 
-        private void Start()
-        {
-        }
 
-        private void OnEnable()
-        {
-            ModelViewController.GetInstance.Subscribe_OnChangeGoldPocket(this);   
-            ModelViewController.GetInstance.Subscribe_OnChangePopulationPocket(this);
-        }
 
-        private void OnDisable()
+        public override void InitializeData(UnitData entityData, IPlayer player)
         {
-            ModelViewController.GetInstance.Unsubscribe_OnChangeGoldPocket(this);
-            ModelViewController.GetInstance.Unsubscribe_OnChangePopulationPocket(this);
-        }
-
-        public override void InitializeData(AEntityData entityData)
-        {
-            if(entityData is UnitData)
-            {
-                _unitData = entityData as UnitData;
+                _unitData = entityData;
+                InitializeListener(player);
                 Initialize(_unitData);
-            }
         }
 
         public void Initialize(UnitData data)
@@ -65,15 +45,23 @@ namespace AgeOfKing.UI
 
         void OnButtonClicked()
         {
-            if (PlayerManager.GetInstance.IsGoldEnough(_unitData.GetPrice))
+            if (ownerPlayer.GetVillage.IsGoldEnough(_unitData.GetPrice))
             {
                 _manufacturerBuilding.Produce(_unitData);
             }
         }
 
-        public void OnValueChanged(int leftAmount)
+
+
+        public override void VillageDataChanged(VillageData updated)
         {
-            if (leftAmount < _unitData.GetPrice)
+            if (updated.MoveRights <= 0)
+            {
+                BTN_produce.interactable = false;
+                return;
+            }
+
+            if (updated.Gold < _unitData.GetPrice || updated.Population <= 0)
             {
                 BTN_produce.interactable = false;
                 return;
@@ -81,18 +69,5 @@ namespace AgeOfKing.UI
 
             BTN_produce.interactable = true;
         }
-
-        public void OnPopulationChanged(int leftAmount)
-        {
-            if (leftAmount <= 0 )
-            {
-                BTN_produce.interactable = false;
-                return;
-            }
-
-            BTN_produce.interactable = true;
-        }
-
-      
     }
 }

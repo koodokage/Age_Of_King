@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace AgeOfKing.Datas
+namespace AgeOfKing.Data
 {
     [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/ManufacturerBuilding", order = 1)]
     public class ManufacturerBuildingData : ScriptableObject

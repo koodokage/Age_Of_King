@@ -23,6 +23,8 @@ namespace AgeOfKing.AStar
         public AStarNode endingNode;
 
         public int redLine;
+        public int maxPathLength;
+        public int currentPathLength;
 
 
 
@@ -86,6 +88,7 @@ namespace AgeOfKing.AStar
                 searchSet.Remove(current.coordinate);
                 counter++;
 
+
                 //redline for infinite loops (max iteration count)
                 if (counter > redLine)
                     break;
@@ -134,6 +137,6 @@ namespace AgeOfKing.AStar
             return a * a + b * b;
         }
 
-        
+
     }
 }

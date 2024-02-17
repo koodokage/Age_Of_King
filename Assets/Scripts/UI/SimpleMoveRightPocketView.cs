@@ -1,22 +1,18 @@
-﻿using TMPro;
+﻿using AgeOfKing.Data;
+using TMPro;
 using UnityEngine;
 
 namespace AgeOfKing.UI
 {
-    public class SimpleMoveRightPocketView : AValuePocketView
+    public class SimpleMoveRightPocketView : AVillageDataView
     {
         [SerializeField] TextMeshProUGUI TMP_moveRight;
 
-        public override void Decreased(int updated, int change)
+        public override void VillageDataChanged(VillageData updated)
         {
-            TMP_moveRight.text = updated.ToString();
+            TMP_moveRight.text = updated.MoveRights.ToString();
         }
 
-        public override void Increased(int updated, int change)
-        {
-            TMP_moveRight.text = updated.ToString();
-        }
     }
-
 
 }

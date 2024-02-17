@@ -1,25 +1,39 @@
-﻿using AgeOfKing.Abstract.UI;
-using AgeOfKing.Components;
-using AgeOfKing.Datas;
+﻿using AgeOfKing.Components;
+using AgeOfKing.Data;
+using AgeOfKing.Systems;
 using UnityEngine;
 
 namespace AgeOfKing.UI
 {
-    public class ProductionMenuInitializer : ALaunchableUI
+    public class ProductionMenuInitializer : MonoBehaviour
     {
-        [SerializeField] BuildingData[] buildings;
         [SerializeField] GameObject buttonPrefab;
-        [SerializeField] RectTransform prefabParent;
+        [SerializeField] RectTransform scrollContent;
         [SerializeField] InfiniteScroll infiniteScroll;
 
-        public override void Launch()
+        public  void Launch(BuildingData[] buildings)
         {
-           int scrollerRequestedCount =  infiniteScroll.GetRequestedAmount(buildings.Length);
+            // Clean up first !
+            int scrollContentChildCount = scrollContent.childCount;
+            BuildingProduceButton buildingButton;
+
+            while (scrollContentChildCount != 0)
+            {
+                var child = scrollContent.GetChild(0);
+                if (child.TryGetComponent(out buildingButton))
+                {
+                    BuildingProduceButtonFactory.GetInstance.Release(buildingButton);
+                }
+                scrollContentChildCount--;
+
+            }
+
+            int scrollerRequestedCount =  infiniteScroll.GetRequestedAmount(buildings.Length);
             int loopIndexCounter = 0;
 
             while (scrollerRequestedCount != 0)
             {
-               BuildingProduceButtonFactory.GetInstance.GetProducerUI(buildings[loopIndexCounter], prefabParent);
+               BuildingProduceButtonFactory.GetInstance.GetProducerUI(buildings[loopIndexCounter], scrollContent, TurnManager.GetInstance.GetTurnPlayer);
 
                 scrollerRequestedCount--;
                 loopIndexCounter++;

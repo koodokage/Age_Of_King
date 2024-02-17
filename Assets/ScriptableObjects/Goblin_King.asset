@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c00b57e6def917479ea862876757ea9, type: 3}
+  m_Name: Goblin_King
+  m_EditorClassIdentifier: 
+  icon: {fileID: 1860982373, guid: 669bb8c2cabb1b74badd2f2cf8cd2c6d, type: 3}
+  aspectSize: {x: 56, y: 73}
+  label: King
+  description: I AM THE KING
+  price: 0
+  entityTile: {fileID: 11400000, guid: 9f8042584466be94f962e9c1202c7b07, type: 2}
+  xDimension: 1
+  yDimension: 1
+  entityStats:
+  - usage: 0
+    genre: 1
+    value: 1
+  unitPrefab: {fileID: -4132427577805743298, guid: 2ce5f26d8617ddb40b30148bfb16838f, type: 3}
+  stats:
+  - genre: 0
+    value: 7
+  - genre: 1
+    value: 1
+  - genre: 2
+    value: 1
+  - genre: 3
+    value: 10

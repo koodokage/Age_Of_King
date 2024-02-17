@@ -1,77 +1,121 @@
+using AgeOfKing.Components;
 using AgeOfKing.Data;
+using AgeOfKing.Systems.Input;
+using AgeOfKing.Utils;
 using UnityEngine;
 
 namespace AgeOfKing.Systems
 {
-    public class PlayerManager : SingleBehaviour<PlayerManager>
+    public enum SIDE { LEFT, RIGHT }
+
+    public interface IPlayer
     {
-        [SerializeField] AModelData goldModelData;
-        [SerializeField] APopulationModelData populationModelData;
-        [SerializeField] AModelData moveRightsModeData;
+        public string Name { get; }
+        public SIDE PlayGroundSide{get;}
+        public Village GetVillage{ get; }
+        public KingdomPreset GetKingdomPreset { get; }
+        public ICommandController CommandController { get; }
+        public IBuildingTileChecker BuildingTileChecker { get; }
 
-        private void Start()
+        public void SwapPlayer(bool isOn); 
+
+    }
+
+    public class Player : IPlayer
+    {
+        public Player(KingdomPreset kingdomPreset, SIDE playground,string playerName)
         {
-            //Initialize game start values (add on SO)
-            goldModelData.SetValue(goldModelData.GetValue);
-            moveRightsModeData.SetValue(moveRightsModeData.GetValue);
-            populationModelData.SetValue(populationModelData.GetValue);
-            populationModelData.SetCapacity(populationModelData.GetCapacity);
+            Name = playerName;
+            PlayGroundSide = playground;
+            GetKingdomPreset = kingdomPreset;
+            GetVillage = new Village(this, kingdomPreset);
+            _inputManager = new PCInputManager();
+            _mapInput = new PlayerMapInput(_inputManager, this);
+            BuildingTileChecker = new PlayerBuildingTileChecker(_inputManager, _mapInput, this, playground);
+            CommandController = new PlayerCommandController(this);
+            _playerMapHighlighter = new PlayerMapHighlighter();
+
+            _mapInput.OnCellHover += CommandController.CalculatePath;
+            _mapInput.OnCellSelected += CommandController.SetControllableUnit;
+            _mapInput.OnCellUnitCommand += CommandController.UnitCommand;
+
+            CommandController.OnPathCreated += _playerMapHighlighter.ShowPath;
+            CommandController.OnCommandStateReset += _playerMapHighlighter.Close;
+
+            BuildingTileChecker.OnCheckingTiles += _playerMapHighlighter.ShowTile;
+            BuildingTileChecker.OnBuildCommand += CommandController.BuildCommand;
+            BuildingTileChecker.OnPlacementEnd += _playerMapHighlighter.Close;
         }
 
-        public bool IsGoldEnough(int requested)
+        public Village GetVillage { get; private set; }
+
+        public KingdomPreset GetKingdomPreset { get; private set; }
+
+        public ICommandController CommandController { get; private set; }
+
+        public IBuildingTileChecker BuildingTileChecker { get; private set; }
+
+        public string Name { get; private set; }
+        public SIDE PlayGroundSide { get ; private set; }
+
+        IInputManager _inputManager;
+        IMapInput _mapInput;
+        IHighlighter _playerMapHighlighter;
+
+        public void SwapPlayer(bool isOn)
         {
-            return goldModelData.CheckEnough(requested);
+            _inputManager.SwapInputState(isOn);
+        }
+    }
+
+
+    public static class PlayerManager 
+    {
+        static IPlayer p1;
+        static IPlayer p2;
+
+        public static IPlayer P1 { get => p1; }
+        public static IPlayer P2 { get => p2; }
+
+        public static void CreatePlayer(KingdomPreset kingdomPreset_P1,KingdomPreset kingdomPreset_P2)
+        {
+            p1 = new Player(kingdomPreset_P1,SIDE.LEFT,"P1");
+            p2 = new Player(kingdomPreset_P2,SIDE.RIGHT,"P2");
+
+            p1.GetVillage.BindUI_PlayerVillage();
+            p1.SwapPlayer(true);
+            TurnManager.GetInstance.StartGame();
+
+            SpawnKings(p1);
+            SpawnKings(p2);
         }
 
-        public bool TryPurhcaseWithGold(int requested)
+        /// <summary>
+        /// Swap player and controller
+        /// </summary>
+        /// <param name="player"></param>
+        public static void SwapPlayer(IPlayer player)
         {
-            bool state = goldModelData.CheckEnough(requested);
-
-            if (state)
+            if (player == p1)
             {
-                PurchaseWithGold(requested);
+                p1.SwapPlayer(true);
+                p2.SwapPlayer(false);
+            }
+            else
+            {
+                p2.SwapPlayer(true);
+                p1.SwapPlayer(false);
             }
 
-            return state;
         }
 
-        public bool IsPopulationEnough(int requested)
+        static void SpawnKings(IPlayer player)
         {
-            return populationModelData.CheckEnough(requested);
-        }
-
-        public void ChangePopulation(int changeAmount)
-        {
-            if (changeAmount > 0)
-            {
-                populationModelData.Increase(changeAmount);
-            }
-            else if (changeAmount < 0)
-            {
-                populationModelData.Decrease(changeAmount);
-            }
-        }
-
-        public void ChangePopulationCapacity(int changeAmount)
-        {
-            if (changeAmount > 0)
-            {
-                populationModelData.IncreaseCapacity(changeAmount);
-            }
-            else if (changeAmount < 0)
-            {
-                populationModelData.DecreaseCapacity(changeAmount);
-            }
-        }
-
-        void PurchaseWithGold(int changeAmount)
-        {
-            goldModelData.Decrease(changeAmount);
-        }
-
-        public void AddGold(int changeAmount)
-        {
-            goldModelData.Increase(changeAmount);
+            Abstract.Components.AUnit unit = UnitFactory.GetInstance.Produce(player.GetKingdomPreset.GetKigdomKing, player);
+            Vector3Int cellLocation = MapUtils.GetKingStartLocation(player.PlayGroundSide);
+            unit.Draw(cellLocation);
+            unit.MoveTo(cellLocation);
+            MapEntityDataBase.AddUnitData(cellLocation, unit);
         }
 
     }

@@ -54,12 +54,12 @@ SpriteAtlas:
     - {fileID: 102900000, guid: 9f60e406bab1ad8488259f15939a455c, type: 3}
     - {fileID: 102900000, guid: f0d3f31025247424590e3740f1985791, type: 3}
     - {fileID: 102900000, guid: 975c9af9482263342b85bf0366a3f533, type: 3}
-    - {fileID: 102900000, guid: d8a7240f2d1892743b9e8b2e1cece5c0, type: 3}
+    - {fileID: 102900000, guid: c703b44d4008fb54c97f329033f0c464, type: 3}
     - {fileID: 102900000, guid: ce9caf8c1e6a34344ae7a1cb722acab1, type: 3}
     - {fileID: 102900000, guid: f4ea6d2806adb744c8eb057ba1b7570b, type: 3}
     - {fileID: 102900000, guid: c590dc1a32d19d445a1c751055d08a33, type: 3}
     - {fileID: 102900000, guid: 2b868acff2ea3644f813463696c97e0a, type: 3}
-    - {fileID: 102900000, guid: c703b44d4008fb54c97f329033f0c464, type: 3}
+    - {fileID: 102900000, guid: d8a7240f2d1892743b9e8b2e1cece5c0, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
@@ -71,7 +71,10 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a7ca4d30f1e83fe449a00c6772a8e26b, type: 3}
   - {fileID: 21300000, guid: ff4e2a40a0a91494a873149252b1aaaf, type: 3}
   - {fileID: 21300000, guid: 844a1050d03ba5046bfb86af34a81e47, type: 3}
-  - {fileID: 21300000, guid: f12da350e5ce4734ab5ea40a6768f9dd, type: 3}
+  - {fileID: 944451790, guid: f12da350e5ce4734ab5ea40a6768f9dd, type: 3}
+  - {fileID: -2000448125, guid: f12da350e5ce4734ab5ea40a6768f9dd, type: 3}
+  - {fileID: -1768537314, guid: f12da350e5ce4734ab5ea40a6768f9dd, type: 3}
+  - {fileID: 1149574976, guid: f12da350e5ce4734ab5ea40a6768f9dd, type: 3}
   - {fileID: 21300000, guid: 3c9805506cdde8f44889fc034ab0097e, type: 3}
   - {fileID: 21300000, guid: 966ff550585ec504896a28b55fd7281c, type: 3}
   - {fileID: 21300000, guid: 7968eb5035cf9f74a82137b82c63a37e, type: 3}
@@ -352,6 +355,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: c0e7217a07e49364db48c62cc2e2b376, type: 3}
   - {fileID: 21300000, guid: 4605338a5a51383478a6b8eb3707e90c, type: 3}
   - {fileID: 21300000, guid: bbf8638a8a75d9c42b93639213c92c9b, type: 3}
+  - {fileID: 21300000, guid: 7ccc198ac934afa4b8b768a241d5d3ea, type: 3}
   - {fileID: 21300000, guid: 4408269a96438e84796304f4ac0ed623, type: 3}
   - {fileID: 21300000, guid: 7797699abc4533a41b6382f18c17d526, type: 3}
   - {fileID: 21300000, guid: 0ad8b8da469a0024d8913921ab36d447, type: 3}
@@ -422,7 +426,10 @@ SpriteAtlas:
   - Human_Powerplant_Blue
   - Cut Topaz
   - Bone
-  - Goblin_Tower_Red
+  - Goblin_Tower_Red_1
+  - Goblin_Tower_Red_0
+  - Goblin_Tower_Red_3
+  - Goblin_Tower_Red_2
   - Cut Sapphire
   - Mushroom
   - Regular_01
@@ -703,6 +710,7 @@ SpriteAtlas:
   - Leather
   - Copper Coin
   - Bow
+  - GoldMineGoblin_Active
   - Candle
   - Pressed_02
   - Ribbon_Blue_Connection_Up_Pressed

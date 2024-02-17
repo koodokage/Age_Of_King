@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+using AgeOfKing.Data;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class MapHighlighter : SingleBehaviour<MapHighlighter>
+public class MapHighlighter : ASingleBehaviour<MapHighlighter>
 {
     [Header("Highlight")]
     [SerializeField] Tile tile;
@@ -14,7 +14,7 @@ public class MapHighlighter : SingleBehaviour<MapHighlighter>
 
     private void Start()
     {
-        _hgMap = Maps.GetInstance.GetHighlightMap;
+        _hgMap = Map.GetInstance.GetHighlightMap;
         isUsed = false;
     }
 

@@ -6,52 +6,40 @@ using UnityEngine;
 
 namespace AgeOfKing.AStar
 {
-    public static class PathFinder
+    public class PathFinder
     {
-        static Dictionary<int2,bool> _obstacles;
-        static AStarNode start, end;
+        static Dictionary<int2,bool> _obstacles = new Dictionary<int2, bool>();
+        static AStarNode start = new AStarNode { coordinate = int2.zero, parent = int2.zero, gScore = int.MaxValue, hScore = int.MaxValue };
+        static AStarNode end = new AStarNode { coordinate = int2.zero, parent = int2.zero, gScore = int.MaxValue, hScore = int.MaxValue };
         static int safeGuard = 1000;
+        static int pathDistance;
 
-        public static void Start()
+        
+
+
+        public static bool GetPath(Vector3Int start,Vector3Int end,int distance , out Vector3Int[] pathOrdered, out Vector3Int lastCell,out int iteratedDistance)
         {
-            _obstacles = new Dictionary<int2, bool>();
-            start = new AStarNode { coordinate = int2.zero, parent = int2.zero, gScore = int.MaxValue, hScore = int.MaxValue };
-            end = new AStarNode { coordinate = int2.zero, parent = int2.zero, gScore = int.MaxValue, hScore = int.MaxValue };
-        }
-
-        public static void GetPath(out Stack<Vector3Int> path)
-        {
-            ExecuteAStarJob(out path);
-        }
-
-        public static bool FindAndShowPath(Vector3Int start,Vector3Int end,int distance, out Vector3Int lastCell)
-        {
-            lastCell = Vector3Int.zero;
-
+            lastCell = start;
             Stack<Vector3Int> aStarPath = new Stack<Vector3Int>();
             InitializeStartNode(start);
             InitializeEndNode(end);
-            ExecuteAStarJob(out aStarPath);
+            iteratedDistance = ExecuteAStarJob(distance, ref aStarPath,ref lastCell);
+            pathDistance = distance;
 
-            if (aStarPath.Count == 0)
+            int pathLength = aStarPath.Count;
+            pathOrdered = new Vector3Int[pathLength];
+
+            if (pathLength == 0)
                 return false;
 
-            MapHighlighter hgSystem = MapHighlighter.GetInstance;
-            hgSystem.ClearAll();
 
-            while (distance != 0)
+            while (aStarPath.Count > 0)
             {
-                if (aStarPath.Count > 0)
-                {
-                    lastCell = aStarPath.Pop();
-                    hgSystem.Highlight(lastCell, false);
-                }
-                else
-                {
+                pathLength--;
+                Vector3Int loc = aStarPath.Pop();
+                pathOrdered[pathLength] = loc;
+                if (pathLength == 0)
                     break;
-                }
-
-                distance--;
             }
 
             return true;
@@ -88,7 +76,7 @@ namespace AgeOfKing.AStar
 
         }
 
-        static void ExecuteAStarJob(out Stack<Vector3Int> path)
+        static int ExecuteAStarJob(int distance,ref Stack<Vector3Int> path,ref Vector3Int lastLocation)
         {
             // jobified datas
             NativeHashMap<int2, bool> init_obstacleSet = new NativeHashMap<int2, bool>(_obstacles.Count, Allocator.TempJob);
@@ -111,6 +99,7 @@ namespace AgeOfKing.AStar
                 searchSet = init_searchableSet,
                 movementWay = init_moveOffsets,
                 redLine = safeGuard,
+                maxPathLength = pathDistance
             };
 
             // job starting
@@ -120,9 +109,6 @@ namespace AgeOfKing.AStar
             //resutls ->
 
             NativeArray<AStarNode> nodeArray = init_moveableNodes.GetValueArray(Allocator.TempJob);
-
-            path = new Stack<Vector3Int>();
-
             // valid path
             if (init_moveableNodes.ContainsKey(end.coordinate))
             {
@@ -145,6 +131,9 @@ namespace AgeOfKing.AStar
             init_searchableSet.Dispose();
             init_moveOffsets.Dispose();
             nodeArray.Dispose();
+
+
+            return aStar.currentPathLength;
 
         }
     }

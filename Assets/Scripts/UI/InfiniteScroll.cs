@@ -1,6 +1,4 @@
-using AgeOfKing.Abstract.Components;
-using AgeOfKing.Abstract.Datas;
-using AgeOfKing.Abstract.UI;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
@@ -19,6 +17,7 @@ namespace AgeOfKing.UI
         RectTransform _owner;
         Way _currentWay = Way.NONE;
         float _lastScrollValue = 0;
+        bool _forceStop = false;
         private const float SCROLL_STOP_MAGNITUDE = 100f;
 
         [Header("Components")]
@@ -27,11 +26,11 @@ namespace AgeOfKing.UI
         [Header("Disappear Bounds")]
         [SerializeField] RectTransform topBound;
         [SerializeField] RectTransform botBound;
-        [SerializeField] private float elementHeight = 100;
+        [SerializeField] private float neededDiviser = 100;
         [SerializeField] float verticalOffset = 25;
         [SerializeField] float horizontalOffset = 120;
 
-        int _dynamicNeededByHeight;
+        int _dynamicNeededAmount;
 
         private void Awake()
         {
@@ -40,24 +39,31 @@ namespace AgeOfKing.UI
             Assert.IsNotNull(_scrollRect);
             _owner = GetComponent<RectTransform>();
             Assert.IsNotNull(_owner);
+
+            _forceStop = true;
         }
 
         public void Launch()
         {
-            float midPoint = (_dynamicNeededByHeight * elementHeight)/2;
+            float midPoint = (_dynamicNeededAmount * neededDiviser)/2;
             var local = content.localPosition;
             local.y = midPoint;
             content.localPosition = local;
             OrderElements();
+            _forceStop = false;
         }
 
         public int GetRequestedAmount(int coreDataCount)
         {
-            _dynamicNeededByHeight = (int)_owner.rect.height / (int)elementHeight;
-            int ceil = _dynamicNeededByHeight % coreDataCount;
-            _dynamicNeededByHeight -= ceil;
-
-            return _dynamicNeededByHeight;
+            _forceStop = true;
+            content.localPosition = Vector2.zero;
+            Vector3 botPos = midPoint.TransformPoint(botBound.localPosition);
+            Vector3 topPos = midPoint.TransformPoint(topBound.localPosition);
+            int h = Math.Abs((int)topPos.y) - Math.Abs((int)botPos.y);
+            _dynamicNeededAmount = h / (int)neededDiviser;
+            int ceil = _dynamicNeededAmount % coreDataCount;
+            _dynamicNeededAmount -= ceil;
+            return _dynamicNeededAmount;
         }
 
         private void OrderElements()
@@ -121,6 +127,12 @@ namespace AgeOfKing.UI
 
         private void Update()
         {
+            if (_forceStop)
+            {
+                _scrollRect.velocity = Vector2.zero;
+                _currentWay = Way.NONE;
+                return;
+            }
 
             //Nothing to perform
             if (_currentWay == Way.NONE)

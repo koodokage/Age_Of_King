@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using AgeOfKing.Data;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 
-namespace AgeOfKing.Abstract.Datas
+namespace AgeOfKing.Abstract.Data
 {
     public abstract class AEntityData : ScriptableObject
     {
@@ -17,12 +18,16 @@ namespace AgeOfKing.Abstract.Datas
         [SerializeField, Range(1, 8)] protected int xDimension;
         [SerializeField, Range(1, 8)] protected int yDimension;
 
+        [Header("DATA")]
+        [SerializeField] EntityStat[] entityStats;
+
         public Tile GetTile { get => entityTile; }
         public int GetXDimension { get => xDimension; }
         public int GetYDimension { get => yDimension; }
 
 
         public Sprite GetIcon { get => icon; }
+        public EntityStat[] GetEntityStats { get => entityStats; }
         public Vector2 GetAspectSize { get => aspectSize; }
         public string GetLabel { get => label; }
         public string GetDescription { get => description; }

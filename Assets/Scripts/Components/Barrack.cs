@@ -1,5 +1,5 @@
 ﻿using AgeOfKing.Abstract.Components;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
 using UnityEngine;
 
 namespace AgeOfKing.Components
@@ -10,10 +10,10 @@ namespace AgeOfKing.Components
         {
             if(TryGetSpawnLocation(out Vector3Int cellLocation))
             {
-                AUnit unit = UnitFactory.GetInstance.Produce(unitData);
+                AUnit unit = UnitFactory.GetInstance.Produce(unitData,owner);
                 unit.Draw(cellLocation);
                 unit.MoveTo(cellLocation);
-                MapEntityDataBase.GetInstance.AddUnitData(cellLocation, unit);
+                MapEntityDataBase.AddUnitData(cellLocation, unit);
             }
             else
             {

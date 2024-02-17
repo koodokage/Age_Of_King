@@ -1,25 +1,34 @@
 using AgeOfKing.Abstract.Components;
-using AgeOfKing.Abstract.Datas;
+using AgeOfKing.Abstract.Data;
+using AgeOfKing.Data;
 using UnityEngine;
 
-namespace AgeOfKing.Datas
+namespace AgeOfKing.Data
 {
     [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/Unit", order = 2)]
     public class UnitData : AEntityData
     {
         [SerializeField] AUnit unitPrefab;
-        [Header("VISUALIZATION")]
-        [SerializeField] Sprite spriteImage;
-        [Header("STATS")]
-        [SerializeField] protected int movement = 5;
-        [SerializeField] protected int attack = 2;
-        [SerializeField] protected int health = 10;
+        [Header("CHARACTER STATS")]
+        [SerializeField] protected CharacterStatData[] stats;
 
         public AUnit GetPrefab { get => unitPrefab; }
-        public Sprite GetSprite { get => spriteImage; }
-        public int GetMovement { get => movement; }
-        public int GetAttack { get => attack; }
-        public int GetHealth { get => health; }
+        public CharacterStatData[] GetStats { get => stats; }
+
+        public bool TryGetValueByGenre(CharacterStatGenre statGenre,out int value)
+        {
+            value = 0;
+            foreach (var stat in stats)
+            {
+                if(stat.GetGenre == statGenre)
+                {
+                    value = stat.GetValue;
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
     }
 

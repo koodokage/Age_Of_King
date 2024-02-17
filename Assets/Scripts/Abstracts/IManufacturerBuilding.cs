@@ -1,4 +1,4 @@
-﻿using AgeOfKing.Datas;
+﻿using AgeOfKing.Data;
 
 namespace AgeOfKing.Abstract.Components
 {

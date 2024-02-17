@@ -1,6 +1,8 @@
 using AgeOfKing.Abstract.Components;
+using AgeOfKing.Abstract.Data;
 using AgeOfKing.Components;
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
+using AgeOfKing.Systems;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -17,18 +19,36 @@ namespace AgeOfKing.UI
         [SerializeField] TextMeshProUGUI TMP_label;
         [SerializeField] Image icon;
         [SerializeField] TextMeshProUGUI TMP_description;
+        
+        char plus = '+';
+        char mine = ' ';
 
         private void Start()
         {
             Close();
         }
 
-        public void Open(AManufacturerBuilding building)
+        private void InitializeInfo(AEntityData data)
         {
-            TMP_label.text = building.GetData.GetLabel;
-            TMP_description.text = building.GetData.GetDescription;
-            icon.sprite = (Resources.Load("UIAtlas") as UnityEngine.U2D.SpriteAtlas).GetSprite(building.GetData.GetIcon.name); ;
-            icon.rectTransform.sizeDelta = (building.GetData.GetAspectSize);
+            TMP_label.text = data.GetLabel;
+            icon.sprite = (Resources.Load("UIAtlas") as UnityEngine.U2D.SpriteAtlas).GetSprite(data.GetIcon.name); ;
+            icon.rectTransform.sizeDelta = (data.GetAspectSize);
+
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(data.GetDescription);
+            char onUse;
+            foreach (EntityStat stat in data.GetEntityStats)
+            {
+                onUse = stat.GetValue > 0 ? plus : mine;
+                builder.AppendLine($"{stat.GetGenre}: {onUse}{stat.GetValue} ({stat.GetUsage})");
+            }
+
+            TMP_description.text = builder.ToString();
+        }
+
+        public void GenerateAndOpen(AManufacturerBuilding building)
+        {
+            InitializeInfo(building.GetData);
 
             ReleaseProduceables();
 
@@ -40,14 +60,14 @@ namespace AgeOfKing.UI
 
             while (scrollerRequestedCount != 0)
             {
-                var unitButton = UnitProduceButtonFactory.GetInstance.GetProducerUI(unitDatas[loopIndexCounter],scrollContent);
+                var unitButton = UnitProduceButtonFactory.GetInstance.GetProducerUI(unitDatas[loopIndexCounter], scrollContent,TurnManager.GetInstance.GetTurnPlayer);
 
                 scrollerRequestedCount--;
 
                 buttons[scrollerRequestedCount] = unitButton.GetComponent<UnitProduceButton>();
 
                 loopIndexCounter++;
-                if(loopIndexCounter >= unitDataCount)
+                if (loopIndexCounter >= unitDataCount)
                 {
                     loopIndexCounter = 0;
                 }
@@ -59,7 +79,7 @@ namespace AgeOfKing.UI
                 unitProduceButton.SetManufacturer(building);
                 unitProduceButton.transform.SetParent(scrollContent);
             }
-          
+
 
             infiniteScroll.Launch();
             infiniteScroll.gameObject.SetActive(true);
@@ -68,31 +88,45 @@ namespace AgeOfKing.UI
         }
 
 
-        public void Open(ABuilding building)
+
+        public void InitializeAndOpen(BuildingData buildingData)
         {
-            TMP_label.text = building.GetData.GetLabel;
-            TMP_description.text = building.GetData.GetDescription;
-            icon.sprite = (Resources.Load("UIAtlas") as UnityEngine.U2D.SpriteAtlas).GetSprite(building.GetData.GetIcon.name);
-            icon.rectTransform.sizeDelta = (building.GetData.GetAspectSize);
-
+            InitializeInfo(buildingData);
             ReleaseProduceables();
-
             ownerPanel.SetActive(true);
         }
 
 
-        public void Open(AUnit unit)
+        public void InitializeAndOpen(AUnit unit)
         {
+            InitializeInfo(unit.GetData);
 
-            TMP_label.text = unit.GetData.GetLabel;
-            icon.sprite = (Resources.Load("UIAtlas") as UnityEngine.U2D.SpriteAtlas).GetSprite(unit.GetData.GetIcon.name);
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine(unit.GetData.GetDescription);
-            builder.AppendLine($"ATTACK: {unit.GetData.GetAttack}");
-            builder.AppendLine($"MOVEMENT: {unit.GetData.GetMovement}");
-            builder.AppendLine($"HEALTH: {unit.GetData.GetHealth}");
+
+            builder.AppendLine(TMP_description.text);
+            char onUse;
+            foreach (var stat in unit.GetData.GetStats)
+            {
+                if (stat.GetGenre == Data.CharacterStatGenre.HEALTH)
+                {
+                    if (unit.TryGetComponent(out IHittable hittable))
+                    {
+                        builder.AppendLine($"{stat.GetGenre}: : {hittable.CurrentHealth} / {stat.GetValue}");
+                        continue;
+                    }
+                }
+
+                if (stat.GetGenre == Data.CharacterStatGenre.MOVEMENT)
+                {
+                    builder.AppendLine($"{stat.GetGenre}: : {unit.CurrentMovePoint} / {stat.GetValue}");
+                }
+
+                onUse = stat.GetValue > 0 ? plus : mine;
+                builder.AppendLine($"{stat.GetGenre}: {onUse}{stat.GetValue}");
+            }
+
             TMP_description.text = builder.ToString();
-            icon.rectTransform.sizeDelta = (unit.GetData.GetAspectSize);
+
 
             ReleaseProduceables();
 

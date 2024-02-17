@@ -1,11 +1,12 @@
-using AgeOfKing.Datas;
+using AgeOfKing.Data;
+using AgeOfKing.Systems;
 using AgeOfKing.Systems.UI;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 namespace AgeOfKing.Abstract.Components
 {
-    public abstract class ABuilding : AMapEntity, ISelectable, IHittable
+    public abstract class ABuilding : AMapEntity<BuildingData>, ISelectable, IHittable, ITurnListener
     {
         BuildingData _buildinData;
         public BuildingData GetData { get => _buildinData; }
@@ -14,15 +15,33 @@ namespace AgeOfKing.Abstract.Components
 
         protected Vector3Int _placedLocation;
 
-        public virtual void InitializeData(BuildingData data)
+        public override void InitializeData(BuildingData data,IPlayer player)
         {
             _buildinData = data;
             _baseData = data;
+            owner = player;
+
+            TurnManager.GetInstance.OnTurnChange += OnTurnChange;
+
+            foreach (EntityStat stat in GetData.GetEntityStats)
+            {
+                if(stat.GetUsage == StatUsage.ONCE)
+                    owner.GetVillage.IncreaseVillageData(stat.GetGenre, stat.GetValue);
+            }
+
+            owner.GetVillage.UseMoveRights();
+
         }
+
+        private void OnDisable()
+        {
+            TurnManager.GetInstance.OnTurnChange -= OnTurnChange;
+        }
+
 
         public override void Draw(Vector3Int pointerCell)
         {
-            Tilemap targetMap = Maps.GetInstance.GetBuildingMap;
+            Tilemap targetMap = Map.GetInstance.GetBuildingMap;
 
             BuildingData buildingData = GetData;
             _placedLocation = pointerCell;
@@ -34,17 +53,18 @@ namespace AgeOfKing.Abstract.Components
                     Vector3Int cellPosition = new Vector3Int(pointerCell.x + x, pointerCell.y + y, 0);
 
                     // add data to building obstacle
-                    MapEntityDataBase.GetInstance.AddBuildingData(cellPosition, this);
+                    MapEntityDataBase.AddBuildingData(cellPosition, this);
 
                     //side sprite brush
                     targetMap.SetTile(cellPosition, buildingData.GetGroundTile);
                     targetMap.RefreshTile(cellPosition);
 
-                    bool isMoveableRow = buildingData.IsRowMoveable(y);
+                    bool isMoveableRow = buildingData.IsRowMoveable(y,x);
 
                     if (isMoveableRow == false)
                     {
-                        MapEntityDataBase.GetInstance.AddBuildingExtrudeData(cellPosition);
+                        Debug.Log($"CORE BLOCK {x},{y}");
+                        MapEntityDataBase.AddBuildingBlockedData(cellPosition,this);
                     }
 
                 }
@@ -58,7 +78,8 @@ namespace AgeOfKing.Abstract.Components
 
         public virtual void OnSelected()
         {
-            UIManager.GetInstance.OnBuildingSelected(this);
+            if(owner == TurnManager.GetInstance.GetTurnPlayer)
+                 UIManager.GetInstance.OnBuildingSelected(GetData);
         }
 
         public bool Hit(int damage)
@@ -70,6 +91,20 @@ namespace AgeOfKing.Abstract.Components
                 return true;
             }
             return false;
+        }
+
+        public virtual void OnTurnChange(IPlayer side, int turnIndex)
+        {
+            if (side == owner)
+            {
+                foreach (EntityStat stat in GetData.GetEntityStats)
+                {
+                    if (stat.GetUsage == StatUsage.PERTURN)
+                        owner.GetVillage.IncreaseVillageData(stat.GetGenre, stat.GetValue);
+                }
+
+                return;
+            }
         }
     }
 

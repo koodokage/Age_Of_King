@@ -1,141 +1,154 @@
 using AgeOfKing.Data;
 using AgeOfKing.UI;
+using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Events;
 
 namespace AgeOfKing.Systems
 {
-    public class ModelViewController : SingleBehaviour<ModelViewController>
+    public class ModelViewController : ASingleBehaviour<ModelViewController>
     {
 
+        public delegate void  OnVillageDataChange(VillageData villageData);
+        public OnVillageDataChange OnPlayerVillageDataChanged;
+
         [Header("GOLD")]
-        [SerializeField] AModelData goldPocketModel;
-        [SerializeField] AValuePocketView goldPocketView;
-        [SerializeField] UnityEvent OnGoldCome;
-        [SerializeField] UnityEvent OnGoldGone;
+        [SerializeField] AVillageDataView goldDataView;
+        [SerializeField] UnityEvent OnGoldIncome;
+        [SerializeField] UnityEvent OnGoldExpense;
 
         [Header("MOVERIGHTS")]
-        [SerializeField] AModelData moveRightPocketModel;
-        [SerializeField] AValuePocketView moveRightPocketView;
-        [SerializeField] UnityEvent OnMoveRightUsed;
+        [SerializeField] AVillageDataView moveRightPocketView;
+        [SerializeField] UnityEvent OnMoveRightsUsed;
+        [SerializeField] UnityEvent OnMoveRightsBack;
 
         [Header("POPULATION")]
-        [SerializeField] APopulationModelData populationPocketModel;
-        [SerializeField] APopulationPocketView populationPocketView;
+        [SerializeField] AVillageDataView populationDataView;
+        [SerializeField] UnityEvent OnPopulationIncrease;
+        [SerializeField] UnityEvent OnPopulationDecrease;
+
+        [Header("POP. CAPACITY")]
+        [SerializeField] AVillageDataView populationCapacityDataView;
         [SerializeField] UnityEvent OnPopulationCapacityIncrease;
         [SerializeField] UnityEvent OnPopulationCapacityDecrease;
 
-        protected override void Awake()
+        [Header("KING RIGHTS")]
+        [SerializeField] AVillageDataView kingRightDataView;
+        [SerializeField] UnityEvent OnKingRightsDecrease;
+
+
+        #region POPULATIONS
+
+        public void BindModelView_Population(AVillageDataModel villageDataModel)
         {
-            base.Awake();
-            InitializePopulationPocketView();
-            InitializeGoldPocketView();
-            InitializeMoveRightPocketView();
+            villageDataModel.OnChange += PopulationVillageDataModel_OnChange;
+        }
+
+        private void PopulationVillageDataModel_OnChange(VillageData obj, AVillageDataModel.DataModelChangeWay changeWay)
+        {
+            populationDataView.VillageDataChanged(obj);
+            OnPlayerVillageDataChanged?.Invoke(obj);
+
+            if (changeWay == AVillageDataModel.DataModelChangeWay.INCREASE)
+            {
+                OnPopulationIncrease?.Invoke();
+            }
+            else
+            {
+                OnPopulationDecrease?.Invoke();
+            }
         }
 
 
-        public void InitializePopulationPocketView()
+        public void BindModelView_PopulationCapacity(AVillageDataModel villageDataModel)
         {
-            Assert.IsNotNull(populationPocketModel);
-            Assert.IsNotNull(populationPocketView);
-
-            populationPocketModel.OnIncrease += PopulationPocketModel_OnIncrease;
-            populationPocketModel.OnDecrease += PopulationPocketModel_OnDecrease;
-            populationPocketModel.OnCapacityIncrease += PopulationPocketModel_OnCapacityIncrease;
-            populationPocketModel.OnCapacityDecrease += PopulationPocketModel_OnCapacityDecrease;
-  
+            villageDataModel.OnChange += PopulationCapacityVillageDataModel_OnChange;
         }
 
-        public void InitializeGoldPocketView()
-        {
-            Assert.IsNotNull(goldPocketModel);
-            Assert.IsNotNull(goldPocketView);
 
-            goldPocketModel.OnIncrease += GoldPocketModel_OnIncrease;
-            goldPocketModel.OnDecrease += GoldPocketModel_OnDecrease;
+
+        private void PopulationCapacityVillageDataModel_OnChange(VillageData obj, AVillageDataModel.DataModelChangeWay changeWay)
+        {
+            populationCapacityDataView.VillageDataChanged(obj);
+            OnPlayerVillageDataChanged?.Invoke(obj);
+
+            if (changeWay == AVillageDataModel.DataModelChangeWay.INCREASE)
+            {
+                OnPopulationCapacityIncrease?.Invoke();
+            }
+            else
+            {
+                OnPopulationCapacityDecrease?.Invoke();
+            }
         }
 
-        public void InitializeMoveRightPocketView()
-        {
-            Assert.IsNotNull(moveRightPocketModel);
-            Assert.IsNotNull(moveRightPocketView);
+        #endregion
 
-            moveRightPocketModel.OnIncrease += MoveRightPocketModel_OnIncrease;
-            moveRightPocketModel.OnDecrease += MoveRightPocketModel_OnDecrease;
+        #region MOVERIGHTS
+
+        public void BindModelView_MoveRights(AVillageDataModel villageDataModel)
+        {
+            villageDataModel.OnChange += MoveRightsVillageDataModel_OnChange;
         }
 
-        private void MoveRightPocketModel_OnDecrease(int arg1, int arg2)
+        public void BindModelView_KingMoveRights(AVillageDataModel villageDataModel)
         {
-            moveRightPocketView.Decreased(arg1, arg2);
-            OnMoveRightUsed?.Invoke();
+            villageDataModel.OnChange += KingMoveRightsVillageDataModel_OnChange;
         }
 
-        private void MoveRightPocketModel_OnIncrease(int arg1, int arg2)
+
+        private void MoveRightsVillageDataModel_OnChange(VillageData obj,AVillageDataModel.DataModelChangeWay changeWay)
         {
-            moveRightPocketView.Increased(arg1, arg2);
+            moveRightPocketView.VillageDataChanged(obj);
+            OnPlayerVillageDataChanged?.Invoke(obj);
+
+            if(changeWay == AVillageDataModel.DataModelChangeWay.INCREASE)
+            {
+                OnMoveRightsUsed?.Invoke();
+            }
+            else
+            {
+                OnMoveRightsBack?.Invoke();
+            }
         }
 
-        public void Subscribe_OnChangeGoldPocket(IValueViewChangeListener listener) 
+        private void KingMoveRightsVillageDataModel_OnChange(VillageData obj, AVillageDataModel.DataModelChangeWay changeWay)
         {
-            goldPocketModel.OnChange += listener.OnValueChanged;
+            kingRightDataView.VillageDataChanged(obj);
+
+            if (changeWay == AVillageDataModel.DataModelChangeWay.DECREASE)
+            {
+                OnKingRightsDecrease?.Invoke();
+            }
         }
 
-        public void Unsubscribe_OnChangeGoldPocket(IValueViewChangeListener listener)
+        #endregion
+
+        #region GOLD
+
+        public void BindModelView_Gold(AVillageDataModel villageDataModel)
         {
-            goldPocketModel.OnChange -= listener.OnValueChanged;
+            villageDataModel.OnChange += GoldVillageDataModel_OnChange;
         }
 
-        public void Subscribe_OnChangePopulationPocket(IValueViewChangeListener listener)
+
+        private void GoldVillageDataModel_OnChange(VillageData obj, AVillageDataModel.DataModelChangeWay changeWay)
         {
-            populationPocketModel.OnChange += listener.OnValueChanged;
+            goldDataView.VillageDataChanged(obj);
+            OnPlayerVillageDataChanged?.Invoke(obj);
+
+            if (changeWay == AVillageDataModel.DataModelChangeWay.INCREASE)
+            {
+                OnGoldIncome?.Invoke();
+            }
+            else
+            {
+                OnGoldExpense?.Invoke();
+            }
         }
 
-        public void Unsubscribe_OnChangePopulationPocket(IValueViewChangeListener listener)
-        {
-            populationPocketModel.OnChange -= listener.OnValueChanged;
-        }
-
-        
-
-        private void PopulationPocketModel_OnCapacityDecrease(int obj)
-        {
-            populationPocketView.CapacityDecreased(obj);
-            OnPopulationCapacityIncrease?.Invoke();
-
-        }
-
-        private void PopulationPocketModel_OnCapacityIncrease(int obj)
-        {
-            populationPocketView.CapacityIncreased(obj);
-            OnPopulationCapacityIncrease?.Invoke();
-
-        }
-
-        private void PopulationPocketModel_OnDecrease(int arg1, int arg2)
-        {
-            populationPocketView.Decreased(arg1, arg2);
-            OnPopulationCapacityDecrease?.Invoke();
-        }
-
-        private void PopulationPocketModel_OnIncrease(int arg1, int arg2)
-        {
-            populationPocketView.Increased(arg1, arg2);
-            OnPopulationCapacityIncrease?.Invoke();
-        }
-
-        private void GoldPocketModel_OnDecrease(int arg1, int arg2)
-        {
-            goldPocketView.Decreased(arg1, arg2);
-            OnGoldGone?.Invoke();
-        }
-
-        private void GoldPocketModel_OnIncrease(int arg1, int arg2)
-        {
-            goldPocketView.Increased(arg1,arg2);
-            OnGoldCome?.Invoke();
-        }
-
+        #endregion
     }
 
 }

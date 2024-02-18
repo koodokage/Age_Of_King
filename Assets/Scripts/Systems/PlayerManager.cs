@@ -18,6 +18,7 @@ namespace AgeOfKing.Systems
         public IBuildingTileChecker BuildingTileChecker { get; }
 
         public void SwapPlayer(bool isOn); 
+        public void Release();
 
     }
 
@@ -47,6 +48,10 @@ namespace AgeOfKing.Systems
             BuildingTileChecker.OnPlacementEnd += _playerMapHighlighter.Close;
         }
 
+
+        public string Name { get; private set; }
+        public SIDE PlayGroundSide { get ; private set; }
+
         public Village GetVillage { get; private set; }
 
         public KingdomPreset GetKingdomPreset { get; private set; }
@@ -55,9 +60,6 @@ namespace AgeOfKing.Systems
 
         public IBuildingTileChecker BuildingTileChecker { get; private set; }
 
-        public string Name { get; private set; }
-        public SIDE PlayGroundSide { get ; private set; }
-
         IInputManager _inputManager;
         IMapInput _mapInput;
         IHighlighter _playerMapHighlighter;
@@ -65,6 +67,30 @@ namespace AgeOfKing.Systems
         public void SwapPlayer(bool isOn)
         {
             _inputManager.SwapInputState(isOn);
+        }
+
+        public void Release()
+        {
+            GetVillage.UnbindUI_PlayerVillage();
+
+            _mapInput.UnbindInput(_inputManager);
+            _mapInput.OnCellHover -= CommandController.CalculatePath;
+            _mapInput.OnCellSelected -= CommandController.SetControllableUnit;
+            _mapInput.OnCellUnitCommand -= CommandController.UnitCommand;
+
+            CommandController.OnPathCreated -= _playerMapHighlighter.ShowPath;
+            CommandController.OnCommandStateReset -= _playerMapHighlighter.Close;
+
+            BuildingTileChecker.OnCheckingTiles -= _playerMapHighlighter.ShowTile;
+            BuildingTileChecker.OnBuildCommand -= CommandController.BuildCommand;
+            BuildingTileChecker.OnPlacementEnd -= _playerMapHighlighter.Close;
+
+            GetVillage = null;
+            CommandController = null;
+            BuildingTileChecker = null;
+            _inputManager = null;
+            _mapInput = null;
+            _playerMapHighlighter = null;
         }
     }
 
@@ -96,6 +122,9 @@ namespace AgeOfKing.Systems
         /// <param name="player"></param>
         public static void SwapPlayer(IPlayer player)
         {
+            p1.CommandController.Release();
+            p2.CommandController.Release();
+
             if (player == p1)
             {
                 p1.SwapPlayer(true);
@@ -109,13 +138,18 @@ namespace AgeOfKing.Systems
 
         }
 
+        public static void OnGameOver()
+        {
+            p1.Release();
+            p2.Release();
+        }
+
         static void SpawnKings(IPlayer player)
         {
             Abstract.Components.AUnit unit = UnitFactory.GetInstance.Produce(player.GetKingdomPreset.GetKigdomKing, player);
             Vector3Int cellLocation = MapUtils.GetKingStartLocation(player.PlayGroundSide);
             unit.Draw(cellLocation);
             unit.MoveTo(cellLocation);
-            MapEntityDataBase.AddUnitData(cellLocation, unit);
         }
 
     }

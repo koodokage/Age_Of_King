@@ -38,13 +38,24 @@ namespace AgeOfKing.Systems
         public PlayerBuildingTileChecker(IInputManager inputManager,IMapInput mapInput,IPlayer player, SIDE side)
         {
             tileStates = new Dictionary<Vector3Int, bool>(50);
-            mapInput.OnCellHover += OnChange_MousePosition;
-            inputManager.OnPointerSelectionClicked += OnClicked_MouseLeft;
-            inputManager.OnPointerCommandClicked += OnClicked_MouseRight;
+            BindInput(inputManager, mapInput);
             Owner = player;
             _playgroundSide = side;
         }
 
+        void BindInput(IInputManager inputManager, IMapInput mapInput)
+        {
+            mapInput.OnCellHover += OnChange_MousePosition;
+            inputManager.OnPointerSelectionClicked += OnClicked_MouseLeft;
+            inputManager.OnPointerCommandClicked += OnClicked_MouseRight;
+        }
+
+        public void UnbindInput(IInputManager inputManager, IMapInput mapInput)
+        {
+            mapInput.OnCellHover -= OnChange_MousePosition;
+            inputManager.OnPointerSelectionClicked -= OnClicked_MouseLeft;
+            inputManager.OnPointerCommandClicked -= OnClicked_MouseRight;
+        }
 
         private  void OnClicked_MouseRight(Vector2 location)
         {
@@ -61,7 +72,12 @@ namespace AgeOfKing.Systems
 
             if (_isAreaEnable)
             {
-               OnBuildCommand?.Invoke(_buildingData, Owner);
+                //check last pointer location for secure placement
+                if(TryGetTileByLocation(location))
+                {
+                    OnBuildCommand?.Invoke(_buildingData, Owner);
+                }
+
             }
 
             EndPlacement();
@@ -132,6 +148,20 @@ namespace AgeOfKing.Systems
                         _isAreaEnable = false;
                 }
             }
+        }
+
+
+         bool TryGetTileByLocation(Vector2 mouseLocation)
+        {
+            Vector3 mouseLoc = Camera.main.ScreenToWorldPoint(mouseLocation);
+            Vector3Int mouseCell = Map.GetInstance.GetGroundMap.WorldToCell(mouseLoc);
+
+           var tileBase = Map.GetInstance.GetGroundMap.GetTile(mouseCell);
+
+            if (tileBase == null)
+                return false;
+
+            return true;
         }
 
     }

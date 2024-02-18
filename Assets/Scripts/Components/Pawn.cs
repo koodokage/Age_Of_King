@@ -1,4 +1,5 @@
 ﻿using AgeOfKing.Abstract.Components;
+using AgeOfKing.Data;
 using AgeOfKing.Systems;
 using AgeOfKing.Systems.UI;
 using UnityEngine;
@@ -15,6 +16,7 @@ namespace AgeOfKing.Components
             if (owner == TurnManager.GetInstance.GetTurnPlayer)
             {
                 UIManager.GetInstance.OnUnitSelected(this);
+                StartCoroutine(FlickerAnimation(Map.GetInstance.GetUnitMap,Color.gray,currentCellLocation));
             }
         }
 

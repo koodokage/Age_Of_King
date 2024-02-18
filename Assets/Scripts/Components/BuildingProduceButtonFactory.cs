@@ -10,6 +10,9 @@ namespace AgeOfKing.Components
     {
         [SerializeField] BuildingProduceButton prefab_BuildingButton;
 
+        public override float GetPrefabHeight => prefab_BuildingButton.GetComponent<RectTransform>().rect.height;
+
+
         public override BuildingProduceButton GetProducerUI(BuildingData produceData,Transform parent,IPlayer player)
         {
             BuildingProduceButton instance = null;

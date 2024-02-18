@@ -1,6 +1,7 @@
 ﻿using AgeOfKing.Components;
 using AgeOfKing.Data;
 using AgeOfKing.Systems;
+using AgeOfKing.Systems.UI;
 using UnityEngine;
 
 namespace AgeOfKing.UI
@@ -28,7 +29,7 @@ namespace AgeOfKing.UI
 
             }
 
-            int scrollerRequestedCount =  infiniteScroll.GetRequestedAmount(buildings.Length);
+            int scrollerRequestedCount =  infiniteScroll.GetRequestedAmount(buildings.Length, BuildingProduceButtonFactory.GetInstance.GetPrefabHeight);
             int loopIndexCounter = 0;
 
             while (scrollerRequestedCount != 0)
@@ -46,6 +47,13 @@ namespace AgeOfKing.UI
 
 
             infiniteScroll.Launch();
+        }
+
+        public void OnPointerEnterProductionMenu()
+        {
+            TurnManager.GetInstance.GetTurnPlayer.CommandController.Release();
+            UIManager.GetInstance.OnClickEmpty();
+            UIManager.GetInstance.ChangeCursorTexture(Systems.UI.CursorMode.Regular);
         }
 
     }

@@ -13,7 +13,6 @@ namespace AgeOfKing.Components
                 AUnit unit = UnitFactory.GetInstance.Produce(unitData,owner);
                 unit.Draw(cellLocation);
                 unit.MoveTo(cellLocation);
-                MapEntityDataBase.AddUnitData(cellLocation, unit);
             }
             else
             {

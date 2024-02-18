@@ -13,7 +13,6 @@ namespace AgeOfKing.Utils
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void InitializeMovementWay()
         {
-            Debug.Log("MOVEMNT WAY INITIALIZED");
             MovementWays = new int2[8];
             MovementWays[0] = new int2(0, 1);
             MovementWays[1] = new int2(1, 1);

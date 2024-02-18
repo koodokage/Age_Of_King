@@ -14,15 +14,14 @@ namespace AgeOfKing.Abstract.Components
 
         protected int _currentMovePoint;
         public int CurrentMovePoint { get => _currentMovePoint; }
-    
+
 
         public override void InitializeData(UnitData data, IPlayer player)
         {
+            base.InitializeData(data,player);
             _unitData = data;
             _baseData = data;
             owner = player;
-
-            TurnManager.GetInstance.OnTurnChange += OnTurnChange;
 
             foreach (EntityStat stat in GetData.GetEntityStats)
             {
@@ -32,35 +31,52 @@ namespace AgeOfKing.Abstract.Components
 
         }
 
+        private void OnEnable()
+        {
+            TurnManager.GetInstance.OnTurnChange += OnTurnChange;
+        }
+
+        private void OnDisable()
+        {
+            TurnManager.GetInstance.OnTurnChange += OnTurnChange;
+        }
+
         public override void Draw(Vector3Int cellLocation)
         {
             // example : setup some tile occupation with dimension
             Map.GetInstance.GetUnitMap.SetTile(cellLocation, _unitData.GetTile);
+            MapEntityDataBase.AddUnitData(cellLocation, this);
+        }
+
+        public override void Erase()
+        {
+            MapEntityDataBase.RemoveUnitData(currentCellLocation);
+
+            foreach (EntityStat stat in GetData.GetEntityStats)
+            {
+                if (stat.GetUsage == StatUsage.ONCE)
+                    owner.GetVillage.DecreaseVillageData(stat.GetGenre, stat.GetValue);
+            }
+
+            base.Erase();
         }
 
         public virtual void MoveTo(Vector3Int cellLocation,int movementCost = 0)
         {
             OnTileExit();
             _currentMovePoint -= movementCost;
-            _currentCellLocation = cellLocation;
-            MapEntityDataBase.AddUnitData(_currentCellLocation,this);
-            Map.GetInstance.GetUnitMap.SetTile(_currentCellLocation, _unitData.GetTile);
+            currentCellLocation = cellLocation;
+            MapEntityDataBase.AddUnitData(currentCellLocation,this);
+            Map.GetInstance.GetUnitMap.SetTile(currentCellLocation, _unitData.GetTile);
         }
 
         protected void OnTileExit()
         {
-            Map.GetInstance.GetUnitMap.SetTile(_currentCellLocation, null);
-            MapEntityDataBase.RemoveUnitData(_currentCellLocation);
+            Map.GetInstance.GetUnitMap.SetTile(currentCellLocation, null);
+            MapEntityDataBase.RemoveUnitData(currentCellLocation);
         }
 
-        public virtual void OnTurnChange(IPlayer side, int turnIndex)
-        {
-            if (owner == side)
-            {
-                GetData.TryGetValueByGenre(CharacterStatGenre.MOVEMENT, out _currentMovePoint);
-            }
-
-        }
+        public abstract void OnTurnChange(IPlayer side, int turnIndex);
     }
 
 }

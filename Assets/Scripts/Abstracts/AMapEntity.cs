@@ -1,7 +1,11 @@
 using AgeOfKing.Abstract.Data;
 using AgeOfKing.Data;
 using AgeOfKing.Systems;
+using AgeOfKing.Utils;
+using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace AgeOfKing.Abstract.Components
 {
@@ -9,22 +13,47 @@ namespace AgeOfKing.Abstract.Components
     {
         protected IPlayer owner;
 
+        public IPlayer GetOwnerPlayer { get => owner; }
+
         protected AEntityData _baseData;
 
         public AEntityData GetBaseData { get => _baseData; }
 
-        public IPlayer GetOwnerPlayer { get => owner; }
+        protected int currentHealth;
+        public int CurrentHealth { get => currentHealth; }
 
-        protected Vector3Int _currentCellLocation;
-        public Vector3Int GetCurrentCellLocation { get => _currentCellLocation; }
+        protected Vector3Int currentCellLocation;
+        public Vector3Int GetCurrentCellLocation { get => currentCellLocation; }
 
         public abstract void Draw(Vector3Int cellLocation);
-        public abstract void InitializeData(T data, IPlayer player);
-        public void Erase()
+        public virtual void InitializeData(T data, IPlayer player)
         {
-            Map.GetInstance.GetUnitMap.SetTile(_currentCellLocation,null);
+            currentHealth = data.GetEntityHealth;
+
+        }
+        public virtual void Erase()
+        {
+            Map.GetInstance.GetUnitMap.SetTile(currentCellLocation,null);
             Destroy(gameObject);
             // or ? Return to factory
+        }
+
+        protected IEnumerator FlickerAnimation(Tilemap tileMap, Color hgColor, Vector3Int location, Action onEnd = null)
+        {
+            tileMap.SetTileFlags(location, UnityEngine.Tilemaps.TileFlags.None);
+
+            tileMap.SetColor(location, hgColor);
+            yield return AnimationUtils.waitFor_OneHundredMS;
+            tileMap.SetColor(location, Color.white);
+            yield return AnimationUtils.waitFor_OneHundredMS;
+            tileMap.SetColor(location, hgColor);
+            yield return AnimationUtils.waitFor_OneHundredMS;
+            tileMap.SetColor(location, Color.white);
+
+            tileMap.SetTileFlags(location, UnityEngine.Tilemaps.TileFlags.LockColor);
+
+            onEnd?.Invoke();
+
         }
 
     }

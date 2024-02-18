@@ -12,6 +12,7 @@ namespace AgeOfKing.Data
 
         [SerializeField] protected ABuilding buildingPrefab;
         [SerializeField] protected Tile groundTile;
+        [SerializeField] protected int  buildingHealth;
         [SerializeField] protected Vector3Int placementOffset;
         [SerializeField] protected int[] moveableRowIndexs;
         [SerializeField] protected int[] moveableColumnIndexs;
@@ -19,6 +20,7 @@ namespace AgeOfKing.Data
         public Tile GetGroundTile { get => groundTile; }
         public ABuilding GetBuildingPrefab { get => buildingPrefab; }
         public Vector3Int GetPlacementOffset { get => placementOffset; }
+        public Vector3Int GetBuildingHealth { get => placementOffset; }
 
 
         public bool IsRowMoveable(int rowIndex,int columnIndex)

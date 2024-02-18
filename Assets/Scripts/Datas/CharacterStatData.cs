@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AgeOfKing.Data
 {
-    public enum CharacterStatGenre {MOVEMENT,ATTACK,ATTACKRANGE,HEALTH}
+    public enum CharacterStatGenre {MOVEMENT,ATTACK,ATTACKRANGE,ATTACKRIGHTS}
 
     [Serializable]
     public struct CharacterStatData

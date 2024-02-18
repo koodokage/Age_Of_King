@@ -20,6 +20,7 @@ namespace AgeOfKing.Abstract.Data
 
         [Header("DATA")]
         [SerializeField] EntityStat[] entityStats;
+        [SerializeField] protected int entityHealth;
 
         public Tile GetTile { get => entityTile; }
         public int GetXDimension { get => xDimension; }
@@ -32,6 +33,23 @@ namespace AgeOfKing.Abstract.Data
         public string GetLabel { get => label; }
         public string GetDescription { get => description; }
         public int GetPrice { get => price; }
+        public int GetEntityHealth { get => entityHealth; }
+
+
+        public bool TryGetValueByStat(ValueGenre statGenre, out int value)
+        {
+            value = 0;
+            foreach (var stat in entityStats)
+            {
+                if (stat.GetGenre == statGenre)
+                {
+                    value = stat.GetValue;
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
 
     }

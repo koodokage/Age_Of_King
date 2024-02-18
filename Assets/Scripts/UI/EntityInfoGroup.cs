@@ -19,7 +19,7 @@ namespace AgeOfKing.UI
         [SerializeField] TextMeshProUGUI TMP_label;
         [SerializeField] Image icon;
         [SerializeField] TextMeshProUGUI TMP_description;
-        
+
         char plus = '+';
         char mine = ' ';
 
@@ -52,15 +52,16 @@ namespace AgeOfKing.UI
 
             ReleaseProduceables();
 
-            UnitData[] unitDatas = building.GetManufacturerData.GetUnits;
+            //extra :  Can be pulled in manufacturer building data for separeted unit
+            UnitData[] unitDatas = building.GetOwnerPlayer.GetKingdomPreset.GetKigdomUnits;
             int unitDataCount = unitDatas.Length;
-            int scrollerRequestedCount = infiniteScroll.GetRequestedAmount(unitDataCount);
+            int scrollerRequestedCount = infiniteScroll.GetRequestedAmount(unitDataCount,UnitProduceButtonFactory.GetInstance.GetPrefabHeight);
             int loopIndexCounter = 0;
             UnitProduceButton[] buttons = new UnitProduceButton[scrollerRequestedCount];
 
             while (scrollerRequestedCount != 0)
             {
-                var unitButton = UnitProduceButtonFactory.GetInstance.GetProducerUI(unitDatas[loopIndexCounter], scrollContent,TurnManager.GetInstance.GetTurnPlayer);
+                var unitButton = UnitProduceButtonFactory.GetInstance.GetProducerUI(unitDatas[loopIndexCounter], scrollContent, TurnManager.GetInstance.GetTurnPlayer);
 
                 scrollerRequestedCount--;
 
@@ -105,21 +106,20 @@ namespace AgeOfKing.UI
 
             builder.AppendLine(TMP_description.text);
             char onUse;
+
+            if (unit.TryGetComponent(out IHittable hittable))
+            {
+                builder.AppendLine($"HEALTH: {hittable.CurrentHealth} / {unit.GetBaseData.GetEntityHealth}");
+            }
+
             foreach (var stat in unit.GetData.GetStats)
             {
-                if (stat.GetGenre == Data.CharacterStatGenre.HEALTH)
-                {
-                    if (unit.TryGetComponent(out IHittable hittable))
-                    {
-                        builder.AppendLine($"{stat.GetGenre}: : {hittable.CurrentHealth} / {stat.GetValue}");
-                        continue;
-                    }
-                }
 
                 if (stat.GetGenre == Data.CharacterStatGenre.MOVEMENT)
                 {
-                    builder.AppendLine($"{stat.GetGenre}: : {unit.CurrentMovePoint} / {stat.GetValue}");
+                    builder.AppendLine($"{stat.GetGenre}: {unit.CurrentMovePoint} / {stat.GetValue}");
                 }
+
 
                 onUse = stat.GetValue > 0 ? plus : mine;
                 builder.AppendLine($"{stat.GetGenre}: {onUse}{stat.GetValue}");

@@ -16,7 +16,10 @@ namespace AgeOfKing.Components
         public override void OnSelected()
         {
             if (owner == TurnManager.GetInstance.GetTurnPlayer)
+            {
                 UIManager.GetInstance.OnManufacturerSelected(this);
+                StartFlickerAnimation();
+            }
         }
 
         protected bool TryGetSpawnLocation(out Vector3Int spawnLocation)

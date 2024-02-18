@@ -1,6 +1,9 @@
 using AgeOfKing.Data;
 using AgeOfKing.Systems;
 using AgeOfKing.Systems.UI;
+using AgeOfKing.Utils;
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -10,18 +13,17 @@ namespace AgeOfKing.Abstract.Components
     {
         BuildingData _buildinData;
         public BuildingData GetData { get => _buildinData; }
-        int _currentHealth;
-        public int CurrentHealth { get => _currentHealth; }
 
         protected Vector3Int _placedLocation;
 
         public override void InitializeData(BuildingData data,IPlayer player)
         {
+            base.InitializeData(data, player);
+
             _buildinData = data;
             _baseData = data;
             owner = player;
 
-            TurnManager.GetInstance.OnTurnChange += OnTurnChange;
 
             foreach (EntityStat stat in GetData.GetEntityStats)
             {
@@ -31,6 +33,11 @@ namespace AgeOfKing.Abstract.Components
 
             owner.GetVillage.UseMoveRights();
 
+        }
+
+        private void OnEnable()
+        {
+            TurnManager.GetInstance.OnTurnChange += OnTurnChange;
         }
 
         private void OnDisable()
@@ -63,7 +70,6 @@ namespace AgeOfKing.Abstract.Components
 
                     if (isMoveableRow == false)
                     {
-                        Debug.Log($"CORE BLOCK {x},{y}");
                         MapEntityDataBase.AddBuildingBlockedData(cellPosition,this);
                     }
 
@@ -76,22 +82,85 @@ namespace AgeOfKing.Abstract.Components
             targetMap.RefreshTile(pointerCell);
         }
 
+        public override void Erase()
+        {
+            Tilemap targetMap = Map.GetInstance.GetBuildingMap;
+            BuildingData buildingData = GetData;
+
+            for (int x = 0; x < buildingData.GetXDimension; x++)
+            {
+                for (int y = 0; y < buildingData.GetYDimension; y++)
+                {
+                    Vector3Int cellPosition = new Vector3Int(_placedLocation.x + x, _placedLocation.y + y, 0);
+
+                    // add data to building obstacle
+                    MapEntityDataBase.RemoveBuildingData(cellPosition);
+
+                    //side sprite brush
+                    targetMap.SetTile(cellPosition, null);
+                    targetMap.RefreshTile(cellPosition);
+
+                    bool isMoveableRow = buildingData.IsRowMoveable(y, x);
+
+                    if (isMoveableRow == false)
+                    {
+                        MapEntityDataBase.RemoveBuildingBlockedData(cellPosition);
+                    }
+
+                }
+            }
+
+            Vector3Int pointerCell = _placedLocation + GetData.GetPlacementOffset;
+            MapEntityDataBase.RemoveBuildingData(pointerCell);
+            MapEntityDataBase.RemoveBuildingBlockedData(pointerCell);
+            targetMap.SetTile(pointerCell,null);
+            targetMap.RefreshTile(pointerCell);
+
+            foreach (EntityStat stat in GetData.GetEntityStats)
+            {
+                if (stat.GetUsage == StatUsage.ONCE)
+                    owner.GetVillage.DecreaseVillageData(stat.GetGenre, stat.GetValue);
+            }
+
+            base.Erase();
+        }
+
         public virtual void OnSelected()
         {
             if(owner == TurnManager.GetInstance.GetTurnPlayer)
-                 UIManager.GetInstance.OnBuildingSelected(GetData);
+            {
+                UIManager.GetInstance.OnBuildingSelected(GetData);
+                StartFlickerAnimation();
+            }
+        }
+
+        protected void StartFlickerAnimation()
+        {
+            Vector3Int pointerCell = _placedLocation + GetData.GetPlacementOffset;
+            StartCoroutine(FlickerAnimation(Map.GetInstance.GetBuildingMap, Color.gray, pointerCell));
         }
 
         public bool Hit(int damage)
         {
-            _currentHealth -= damage;
+            bool isDestroyed = false;
 
-            if (_currentHealth < 0)
+            currentHealth -= damage;
+
+            isDestroyed = currentHealth <= 0 ? true : false;
+
+            Action onEnd = null;
+            if (currentHealth <= 0)
             {
-                return true;
+                onEnd = Erase;
             }
-            return false;
+
+            Vector3Int pointerCell = _placedLocation + GetData.GetPlacementOffset;
+            StartCoroutine(FlickerAnimation(Map.GetInstance.GetBuildingMap,Color.red, pointerCell, onEnd));
+
+            return isDestroyed;
         }
+
+
 
         public virtual void OnTurnChange(IPlayer side, int turnIndex)
         {

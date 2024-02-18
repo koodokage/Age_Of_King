@@ -26,7 +26,7 @@ namespace AgeOfKing.Systems
         }
 
         /// <summary>
-        ///  Pass the turn to other side
+        ///  Pass the turn to other side and reset controls
         /// </summary>
         public void PassTurn(IPlayer played)
         {
@@ -41,16 +41,20 @@ namespace AgeOfKing.Systems
             {
                 _currentPlayer = PlayerManager.P1;
                 OnTurnPassToP1?.Invoke();
+                _playedTurnCount++;
             }
 
-            PlayerManager.SwapPlayer(_currentPlayer);
-
-            _playedTurnCount++;
             _currentPlayer.GetVillage.BindUI_PlayerVillage();
+            PlayerManager.SwapPlayer(_currentPlayer);
+            MapHighlighter.GetInstance.ClearAll();
             OnTurnChange?.Invoke(_currentPlayer,_playedTurnCount);
         }
 
-
+        /// <summary>
+        /// when game creation phase register by order for first turn
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="action"></param>
         public void RegisterPlayer(IPlayer player,Action action)
         {
             if(_currentPlayer == null)

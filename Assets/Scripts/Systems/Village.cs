@@ -49,7 +49,7 @@ namespace AgeOfKing.Systems
         public void BindUI_PlayerVillage()
         {
             BindModeViewController();
-            UIManager.GetInstance.OnPlayerManagerInitialized(kingdomPreset.GetKingdomBuildings);
+            UIManager.GetInstance.OnPlayerManagerInitialized(Owner);
         }
 
         public void UnbindUI_PlayerVillage()

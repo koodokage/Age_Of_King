@@ -24,13 +24,14 @@ MonoBehaviour:
   - usage: 0
     genre: 1
     value: 1
+  entityHealth: 20
   unitPrefab: {fileID: -4132427577805743298, guid: 2ce5f26d8617ddb40b30148bfb16838f, type: 3}
   stats:
   - genre: 0
-    value: 7
+    value: 14
   - genre: 1
     value: 1
   - genre: 2
     value: 1
   - genre: 3
-    value: 10
+    value: 1

@@ -37,6 +37,7 @@ namespace AgeOfKing.Data
             }
         }
 
+
         /// <summary>
         /// Building covered tile data
         /// </summary>
@@ -45,6 +46,11 @@ namespace AgeOfKing.Data
         public static void AddBuildingData(Vector3Int cell,ABuilding building)
         {
             buildingInstancesDB.TryAdd(cell, building);
+        }
+
+        public static void RemoveBuildingData(Vector3Int cell)
+        {
+            buildingInstancesDB.Remove(cell);
         }
 
         /// <summary>
@@ -59,6 +65,13 @@ namespace AgeOfKing.Data
             {
                 hittableDB.TryAdd(cell, hittable);
             }
+        }
+
+        public static void RemoveBuildingBlockedData(Vector3Int cell)
+        {
+            buildingExtrudedDB.Remove(cell);
+            hittableDB.Remove(cell);
+            PathFinder.RemoveMovementObstacles(cell);
         }
 
         /// <summary>

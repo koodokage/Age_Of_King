@@ -12,8 +12,10 @@ namespace AgeOfKing.UI
     {
         [SerializeField] Button BTN_produce;
         [SerializeField] TextMeshProUGUI TMP_Label;
+        [SerializeField] TextMeshProUGUI TMP_Description;
         [SerializeField] Image icon;
         [SerializeField] TextMeshProUGUI TMP_Price;
+        [SerializeField] TextMeshProUGUI TMP_Population;
 
         UnitData _unitData;
         IManufacturerBuilding _manufacturerBuilding;
@@ -22,17 +24,24 @@ namespace AgeOfKing.UI
 
         public override void InitializeData(UnitData entityData, IPlayer player)
         {
-                _unitData = entityData;
-                InitializeListener(player);
-                Initialize(_unitData);
+            _unitData = entityData;
+            InitializeListener(player);
+            Initialize(_unitData);
         }
 
         public void Initialize(UnitData data)
         {
             _unitData = data;
             TMP_Label.text = _unitData.GetLabel;
+            TMP_Description.text = _unitData.GetDescription;
             TMP_Price.text = _unitData.GetPrice.ToString();
-            icon.sprite = (Resources.Load("UIAtlas") as  UnityEngine.U2D.SpriteAtlas).GetSprite(_unitData.GetIcon.name);
+
+            if (_unitData.TryGetValueByStat(ValueGenre.POPULATION, out int population))
+            {
+                TMP_Population.text = population.ToString();
+            }
+
+            icon.sprite = (Resources.Load("UIAtlas") as UnityEngine.U2D.SpriteAtlas).GetSprite(_unitData.GetIcon.name);
             icon.rectTransform.sizeDelta = (data.GetAspectSize);
             BTN_produce.onClick.RemoveAllListeners();
             BTN_produce.onClick.AddListener(OnButtonClicked);
@@ -61,11 +70,23 @@ namespace AgeOfKing.UI
                 return;
             }
 
-            if (updated.Gold < _unitData.GetPrice || updated.Population <= 0)
+            if (updated.Gold < _unitData.GetPrice )
             {
+                TMP_Price.color = Color.red;
                 BTN_produce.interactable = false;
                 return;
             }
+
+            if (updated.Population <= 0)
+            {
+                TMP_Population.color = Color.red;
+                BTN_produce.interactable = false;
+                return;
+            }
+
+
+            TMP_Population.color = Color.white;
+            TMP_Price.color = Color.white;
 
             BTN_produce.interactable = true;
         }

@@ -18,6 +18,8 @@ namespace AgeOfKing.Abstract.Components
         public abstract K GetProducerUI(T produceData,Transform parent,IPlayer player);
 
         public abstract void Release(K unitButton);
+
+        public abstract float GetPrefabHeight { get; }
     }
 
 }

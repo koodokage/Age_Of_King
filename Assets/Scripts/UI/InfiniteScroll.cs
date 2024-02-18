@@ -13,22 +13,25 @@ namespace AgeOfKing.UI
     public class InfiniteScroll : MonoBehaviour, IEndDragHandler, IBeginDragHandler,IScrollHandler
     {
         enum Way { NONE, UP, DOWN }
+        private const float SCROLL_STOP_MAGNITUDE = 100f;
+        private const int MaxProduceAmount = 20;
+        private const int MinProduceAmountMultiplier = 3;
         ScrollRect _scrollRect;
         RectTransform _owner;
         Way _currentWay = Way.NONE;
-        float _lastScrollValue = 0;
-        bool _forceStop = false;
-        private const float SCROLL_STOP_MAGNITUDE = 100f;
-
         [Header("Components")]
         [SerializeField] RectTransform content;
         [SerializeField] RectTransform midPoint;
         [Header("Disappear Bounds")]
         [SerializeField] RectTransform topBound;
         [SerializeField] RectTransform botBound;
-        [SerializeField] private float neededDiviser = 100;
-        [SerializeField] float verticalOffset = 25;
+        [Header("Initiliazation Bound")]
         [SerializeField] float horizontalOffset = 120;
+
+        float _verticalOffset;
+        float _lastScrollValue = 0;
+        float _elementHeight;
+        bool _forceStop = false;
 
         int _dynamicNeededAmount;
 
@@ -45,7 +48,7 @@ namespace AgeOfKing.UI
 
         public void Launch()
         {
-            float midPoint = (_dynamicNeededAmount * neededDiviser)/2;
+            float midPoint = (_dynamicNeededAmount * _elementHeight)/2;
             var local = content.localPosition;
             local.y = midPoint;
             content.localPosition = local;
@@ -53,23 +56,26 @@ namespace AgeOfKing.UI
             _forceStop = false;
         }
 
-        public int GetRequestedAmount(int coreDataCount)
+        public int GetRequestedAmount(int coreDataCount,float prefabHeight)
         {
+            _elementHeight = prefabHeight;
+            _verticalOffset = prefabHeight;
             _forceStop = true;
             content.localPosition = Vector2.zero;
             Vector3 botPos = midPoint.TransformPoint(botBound.localPosition);
             Vector3 topPos = midPoint.TransformPoint(topBound.localPosition);
             int h = Math.Abs((int)topPos.y) - Math.Abs((int)botPos.y);
-            _dynamicNeededAmount = h / (int)neededDiviser;
+            _dynamicNeededAmount = h / (int)(_elementHeight / 2f);
             int ceil = _dynamicNeededAmount % coreDataCount;
             _dynamicNeededAmount -= ceil;
+            _dynamicNeededAmount = Mathf.Clamp(_dynamicNeededAmount, coreDataCount* MinProduceAmountMultiplier, MaxProduceAmount);
             return _dynamicNeededAmount;
         }
 
         private void OrderElements()
         {
             int count = _scrollRect.content.childCount;
-            float realVerticalOffset = verticalOffset;
+            float realVerticalOffset = _verticalOffset;
 
             for (int i = 0; i < count; i++)
             {
@@ -154,7 +160,7 @@ namespace AgeOfKing.UI
                 {
                     RectTransform firstChildRect = content.GetChild(0).GetComponent<RectTransform>();
                     Vector2 anchoredF = firstChildRect.anchoredPosition;
-                    anchoredF.y += verticalOffset;
+                    anchoredF.y += _verticalOffset;
                     lastChildRect.anchoredPosition = anchoredF;
                     lastChildRect.SetAsFirstSibling();
                 }
@@ -175,7 +181,7 @@ namespace AgeOfKing.UI
                 {
                     RectTransform lastChildRect = content.GetChild(lastIndex).GetComponent<RectTransform>();
                     Vector2 anchoredF = lastChildRect.anchoredPosition;
-                    anchoredF.y -= verticalOffset;
+                    anchoredF.y -= _verticalOffset;
                     firstChildRect.anchoredPosition = anchoredF;
                     firstChildRect.SetAsLastSibling();
                 }

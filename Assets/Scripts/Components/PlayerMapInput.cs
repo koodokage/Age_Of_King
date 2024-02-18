@@ -12,7 +12,7 @@ namespace AgeOfKing.Components
 {
 
 
-    public class PlayerMapInput:IMapInput
+    public class PlayerMapInput : IMapInput
     {
         Camera _mainCamera;
 
@@ -25,7 +25,7 @@ namespace AgeOfKing.Components
         public event Action<Vector3Int, ISelectable, AUnit> OnCellSelected;
         public event Action<Vector3Int, IHittable> OnCellUnitCommand;
 
-        public PlayerMapInput(IInputManager manager,IPlayer player)
+        public PlayerMapInput(IInputManager manager, IPlayer player)
         {
             Owner = player;
             _mainCamera = Camera.main;
@@ -38,6 +38,13 @@ namespace AgeOfKing.Components
             manager.OnPointerLocationChanged += CellHover;
             manager.OnPointerSelectionClicked += CellSelected;
             manager.OnPointerCommandClicked += CellUnitCommand;
+        }
+
+        public void UnbindInput(IInputManager manager)
+        {
+            manager.OnPointerLocationChanged -= CellHover;
+            manager.OnPointerSelectionClicked -= CellSelected;
+            manager.OnPointerCommandClicked -= CellUnitCommand;
         }
 
         private bool TryGetTileByLocation(Vector2 mouseLocation, out TileBase tileBase, out Vector3Int mouseCell)
@@ -59,8 +66,19 @@ namespace AgeOfKing.Components
         /// <param name="pointerLocation"></param>
         public void CellHover(Vector2 pointerLocation)
         {
-            if(TryGetTileByLocation(pointerLocation, out TileBase tile, out _currentSelectedMapCell))
+            if (TryGetTileByLocation(pointerLocation, out TileBase tile, out _currentSelectedMapCell))
             {
+                UIManager.GetInstance.ChangeCursorTexture(Systems.UI.CursorMode.Regular);
+
+                if (Owner.CommandController.IsCurrentUnitValid)
+                {
+                    UIManager.GetInstance.ChangeCursorTexture(Systems.UI.CursorMode.Move);
+                    if (GetHittable(_currentSelectedMapCell, out IHittable hittable))
+                    {
+                        UIManager.GetInstance.ChangeCursorTexture(Systems.UI.CursorMode.Attack, pointerLocation, hittable);
+                    }
+                }
+
                 OnCellHover?.Invoke(_currentSelectedMapCell);
             }
         }
@@ -77,7 +95,7 @@ namespace AgeOfKing.Components
                 if (MapEntityDataBase.IsTileContainSelecteable(mouseCell, out ISelectable selectable))
                 {
                     selectable.OnSelected();
-                    if(MapEntityDataBase.IsTileContainUnit(mouseCell, out  AUnit selecteableUnit))
+                    if (MapEntityDataBase.IsTileContainUnit(mouseCell, out AUnit selecteableUnit))
                     {
                         unit = selecteableUnit.GetOwnerPlayer == Owner ? selecteableUnit : null;
                     }
@@ -86,7 +104,6 @@ namespace AgeOfKing.Components
                 {
                     UIManager.GetInstance.OnClickEmpty();
                 }
-
 
                 OnCellSelected?.Invoke(mouseCell, selectable, unit);
             }
@@ -98,33 +115,43 @@ namespace AgeOfKing.Components
         /// <param name="pointerLocation"></param>
         public void CellUnitCommand(Vector2 pointerLocation)
         {
-            Debug.Log($"COMMANDER PLAYER {Owner.Name}");
             if (TryGetTileByLocation(pointerLocation, out TileBase tile, out Vector3Int mouseCell))
             {
-                IHittable hittable = null;
-              
-                if (MapEntityDataBase.IsTileContainUnit(mouseCell, out AUnit unit))
-                {
-                    if (unit.GetOwnerPlayer != Owner)
-                    {
-                        MapEntityDataBase.IsTileContainHittable(mouseCell, out hittable);
-                    }
-
-                }else if (MapEntityDataBase.IsTileContainExtrudedBuilding(mouseCell, out ABuilding building))
-                {
-                    if (building.GetOwnerPlayer != Owner)
-                    {
-                        Debug.Log($"BUILDING OWNER  {building.GetOwnerPlayer.Name}");
-                        MapEntityDataBase.IsTileContainHittable(mouseCell, out hittable);
-                    }
-                }
-
-                Debug.Log($"COMMAND SENDED");
-
+                bool anyHittable = GetHittable(_currentSelectedMapCell, out IHittable hittable);
                 OnCellUnitCommand?.Invoke(mouseCell, hittable);
+                // Update ui state
+                if (anyHittable)
+                {
+                    UIManager.GetInstance.ChangeCursorTexture(Systems.UI.CursorMode.Attack, pointerLocation, hittable);
+                }
             }
         }
 
+        private bool GetHittable(Vector3Int mouseCell, out IHittable hittable)
+        {
+            hittable = null;
+
+            if (MapEntityDataBase.IsTileContainUnit(mouseCell, out AUnit unit))
+            {
+                if (unit.GetOwnerPlayer != Owner)
+                {
+                    if (MapEntityDataBase.IsTileContainHittable(mouseCell, out hittable))
+                        return true;
+
+                }
+
+            }
+            else if (MapEntityDataBase.IsTileContainExtrudedBuilding(mouseCell, out ABuilding building))
+            {
+                if (building.GetOwnerPlayer != Owner)
+                {
+                    if (MapEntityDataBase.IsTileContainHittable(mouseCell, out hittable))
+                        return true;
+                }
+            }
+
+            return false;
+        }
     }
 
 }

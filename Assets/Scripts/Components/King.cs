@@ -1,20 +1,13 @@
-﻿using AgeOfKing.Abstract.Components;
-using AgeOfKing.Systems;
-using AgeOfKing.Systems.UI;
+﻿using AgeOfKing.Systems;
+using UnityEngine;
 
 namespace AgeOfKing.Components
 {
     /// <summary>
     ///  kingdom king with move block
     /// </summary>
-    public class King : Character, ISelectable
+    public class King : Pawn
     {
-        public void OnSelected()
-        {
-            if (owner == TurnManager.GetInstance.GetTurnPlayer)
-                UIManager.GetInstance.OnUnitSelected(this);
-        }
-
         public override void MoveTo(UnityEngine.Vector3Int cellLocation, int movementCost = 0)
         {
             base.MoveTo(cellLocation, movementCost);
@@ -25,8 +18,6 @@ namespace AgeOfKing.Components
                 _currentMovePoint = 0;
             }
 
-            //UpdateUI
-            OnSelected();
         }
 
         public override void OnTurnChange(IPlayer side, int turnIndex)
@@ -37,6 +28,10 @@ namespace AgeOfKing.Components
             }
         }
 
+        public override void Erase()
+        {
+            GameManager.GetInstance.OnKingDies(owner);
+        }
     }
 
 }

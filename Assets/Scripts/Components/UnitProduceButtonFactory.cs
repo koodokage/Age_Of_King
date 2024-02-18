@@ -10,6 +10,8 @@ namespace AgeOfKing.Components
     {
         [SerializeField] UnitProduceButton prefab_unitButton;
 
+        public override float GetPrefabHeight => prefab_unitButton.GetComponent<RectTransform>().rect.height;
+
         public override UnitProduceButton GetProducerUI(UnitData produceData,Transform parent,IPlayer player)
         {
             UnitProduceButton instance = null;
@@ -23,7 +25,6 @@ namespace AgeOfKing.Components
             {
                 instance = Instantiate(prefab_unitButton,parent);
             }
-
             instance.InitializeData(produceData, player);
             return instance;
         }
@@ -34,6 +35,8 @@ namespace AgeOfKing.Components
             unitButton.transform.SetParent(transform);
             _pool.Push(unitButton);
         }
+
+
     }
 
 }

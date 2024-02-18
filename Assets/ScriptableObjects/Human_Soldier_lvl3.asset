@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c00b57e6def917479ea862876757ea9, type: 3}
+  m_Name: Human_Soldier_lvl3
+  m_EditorClassIdentifier: 
+  icon: {fileID: -1489955, guid: 1e4d636979f996744927f9e86a1fd5ec, type: 3}
+  aspectSize: {x: 36, y: 45}
+  label: Soldier
+  description: Level 3
+  price: 150
+  entityTile: {fileID: 11400000, guid: a81c87c119ed1fc4c8b4f05fddaeff0d, type: 2}
+  xDimension: 1
+  yDimension: 1
+  entityStats:
+  - usage: 0
+    genre: 1
+    value: 1
+  entityHealth: 10
+  unitPrefab: {fileID: 4047715667484904517, guid: f034c9a630e6bb54ebbcc8c115485213, type: 3}
+  stats:
+  - genre: 0
+    value: 7
+  - genre: 1
+    value: 10
+  - genre: 2
+    value: 1
+  - genre: 3
+    value: 1

@@ -3,12 +3,10 @@ using AgeOfKing.AStar;
 using AgeOfKing.Components;
 using AgeOfKing.Data;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace AgeOfKing.Systems
 {
-
     public class PlayerCommandController : ICommandController
     {
         AUnit _currentControlledUnit;
@@ -17,6 +15,9 @@ namespace AgeOfKing.Systems
         bool _isPathValid;
 
         public IPlayer Owner { get; private set; }
+
+        public bool IsCurrentUnitValid { get; private set; }
+
         public event Action<Vector3Int[], int> OnPathCreated;
         public event Action OnCommandStateReset;
 
@@ -33,25 +34,27 @@ namespace AgeOfKing.Systems
             if (unit == null)
             {
                 _currentControlledUnit = null;
-                return;
-            }
-
-            if (unit.GetOwnerPlayer == Owner)
-            {
-                _currentControlledUnit = unit;
             }
             else
             {
-                _currentControlledUnit = null;
+                if (unit.GetOwnerPlayer == Owner)
+                {
+                    _currentControlledUnit = unit;
+                    IsCurrentUnitValid = true;
+                    return;
+                }
+                else
+                {
+                    _currentControlledUnit = null;
+                }
             }
+
+            IsCurrentUnitValid = false;
 
         }
 
         public void UnitCommand(Vector3Int cell, IHittable hittableUnit)
         {
-            Debug.Log($"COMMAND {Owner.Name}");
-
-
             if (_currentControlledUnit == null)
                 return;
 
@@ -92,7 +95,6 @@ namespace AgeOfKing.Systems
                     if (attackSuccess)
                     {
                         soldier.Attack(hittable);
-
                     }
                 }
             }
@@ -121,6 +123,12 @@ namespace AgeOfKing.Systems
             }
         }
 
+        public void Release()
+        {
+            _currentControlledUnit = null;
+            IsCurrentUnitValid = false;
+            OnCommandStateReset?.Invoke();
+        }
     }
 
 }

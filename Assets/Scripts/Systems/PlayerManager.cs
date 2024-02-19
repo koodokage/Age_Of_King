@@ -71,6 +71,9 @@ namespace AgeOfKing.Systems
 
         public void Release()
         {
+            if (GetVillage == null)
+                return;
+
             GetVillage.UnbindUI_PlayerVillage();
 
             _mapInput.UnbindInput(_inputManager);
@@ -140,8 +143,8 @@ namespace AgeOfKing.Systems
 
         public static void OnGameOver()
         {
-            p1.Release();
-            p2.Release();
+            p1?.Release();
+            p2?.Release();
         }
 
         static void SpawnKings(IPlayer player)

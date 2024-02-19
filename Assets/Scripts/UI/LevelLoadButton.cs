@@ -1,3 +1,4 @@
+using AgeOfKing.Systems;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,6 +20,7 @@ namespace AgeOfKing.UI
 
         public void OnButtonClick()
         {
+            PlayerManager.OnGameOver();
             StartCoroutine(LoadYourAsyncScene());
         }
 

@@ -16,5 +16,7 @@ namespace AgeOfKing.UI
 
             TurnManager.GetInstance.PassTurn(PlayerManager.P2);
         }
+
+      
     }
 }

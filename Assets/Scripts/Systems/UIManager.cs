@@ -112,6 +112,7 @@ namespace AgeOfKing.Systems.UI
 
         void OnPlayerWin(IPlayer player)
         {
+            toolTip.Close();
             gameOverScreen.Open(player);
         }
 
